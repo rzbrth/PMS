@@ -1,7 +1,7 @@
 package com.rzb.pms.model;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Date;
+import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
@@ -29,15 +29,24 @@ public class GenericPharma {
 	private String lactationCategory;
 
 	private String instructions;
+	
 	private String sideEffects;
+	
 	private String howItWorks;
+	
 	private String therapeuticClass;
+	
 	private String usedFor;
+	
 	private String strength;
+	
 	private String alcoholInteractionDescription;
+	
 	private Boolean alcoholInteraction;
+	
+	private Date exireDate;
 
 	@OneToMany(mappedBy = "genericPharma", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-	private List<DrugPharma> drugPharma = new ArrayList<>();
+	private Set<DrugPharma> drugPharma;
 
 }

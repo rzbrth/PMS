@@ -30,12 +30,6 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 	/**
 	 * Handle MissingServletRequestParameterException. Triggered when a 'required'
 	 * request parameter is missing.
-	 *
-	 * @param ex      MissingServletRequestParameterException
-	 * @param headers HttpHeaders
-	 * @param status  HttpStatus
-	 * @param request WebRequest
-	 * @return the ApiError object
 	 */
 	@Override
 	protected ResponseEntity<Object> handleMissingServletRequestParameter(MissingServletRequestParameterException ex,
@@ -47,12 +41,6 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 	/**
 	 * Handle HttpMediaTypeNotSupportedException. This one triggers when JSON is
 	 * invalid as well.
-	 *
-	 * @param ex      HttpMediaTypeNotSupportedException
-	 * @param headers HttpHeaders
-	 * @param status  HttpStatus
-	 * @param request WebRequest
-	 * @return the ApiError object
 	 */
 	@Override
 	protected ResponseEntity<Object> handleHttpMediaTypeNotSupported(HttpMediaTypeNotSupportedException ex,
@@ -68,13 +56,6 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 	/**
 	 * Handle MethodArgumentNotValidException. Triggered when an object fails @Valid
 	 * validation.
-	 *
-	 * @param ex      the MethodArgumentNotValidException that is thrown when @Valid
-	 *                validation fails
-	 * @param headers HttpHeaders
-	 * @param status  HttpStatus
-	 * @param request WebRequest
-	 * @return the ApiError object
 	 */
 	@Override
 	protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
@@ -89,9 +70,6 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 	/**
 	 * Handles javax.validation.ConstraintViolationException. Thrown when @Validated
 	 * fails.
-	 *
-	 * @param ex the ConstraintViolationException
-	 * @return the ApiError object
 	 */
 	@ExceptionHandler(javax.validation.ConstraintViolationException.class)
 	protected ResponseEntity<Object> handleConstraintViolation(javax.validation.ConstraintViolationException ex) {
@@ -104,7 +82,6 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 	/**
 	 * Handles CustomEntityNotFoundException. Created to encapsulate errors with more
 	 * detail than javax.persistence.EntityNotFoundException.
-	 *
 	 * @param ex the CustomEntityNotFoundException
 	 * @return the ApiError object
 	 */
@@ -118,11 +95,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 	/**
 	 * Handle HttpMessageNotReadableException. Happens when request JSON is
 	 * malformed.
-	 *
-	 * @param ex      HttpMessageNotReadableException
-	 * @param headers HttpHeaders
-	 * @param status  HttpStatus
-	 * @param request WebRequest
+	 * @param ex the HttpMessageNotReadableException
 	 * @return the ApiError object
 	 */
 	@Override
@@ -136,12 +109,8 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 
 	/**
 	 * Handle HttpMessageNotWritableException.
-	 *
-	 * @param ex      HttpMessageNotWritableException
-	 * @param headers HttpHeaders
-	 * @param status  HttpStatus
-	 * @param request WebRequest
-	 * @return the ApiError object
+	 * @param ex the HttpMessageNotWritableException
+	 * @return the ApiError object 
 	 */
 	@Override
 	protected ResponseEntity<Object> handleHttpMessageNotWritable(HttpMessageNotWritableException ex,
@@ -152,12 +121,8 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 
 	/**
 	 * Handle NoHandlerFoundException.
-	 *
-	 * @param ex
-	 * @param headers
-	 * @param status
-	 * @param request
-	 * @return
+	 * @param ex the NoHandlerFoundException
+	 * @return the ApiError object
 	 */
 	@Override
 	protected ResponseEntity<Object> handleNoHandlerFoundException(NoHandlerFoundException ex, HttpHeaders headers,
@@ -171,6 +136,8 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 
 	/**
 	 * Handle javax.persistence.EntityNotFoundException
+	 * @param ex the EntityNotFoundException
+	 * @return the ApiError object
 	 */
 	@ExceptionHandler(javax.persistence.EntityNotFoundException.class)
 	protected ResponseEntity<Object> handleEntityNotFound(javax.persistence.EntityNotFoundException ex) {
