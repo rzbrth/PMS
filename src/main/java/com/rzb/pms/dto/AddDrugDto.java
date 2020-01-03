@@ -2,10 +2,7 @@ package com.rzb.pms.dto;
 
 import java.util.Date;
 
-import javax.validation.constraints.NotNull;
-
 import com.rzb.pms.model.Drug;
-import com.rzb.pms.utils.BeanUtil;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -14,10 +11,7 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 @Builder
-public class DrugDTO {
-
-	@NotNull(message = "Id can't be null")
-	private String drugId;
+public class AddDrugDto {
 
 	private String genericName;
 
@@ -39,17 +33,16 @@ public class DrugDTO {
 
 	private Date expiryDate;
 
-	private Double avlQntyInWhole;// whole medecine
+	private Double avlQntyInWhole;
 
-	private Double avlQntyInTrimmed;// medecine after cutting
+	private Double avlQntyInTrimmed;
 
 	private String drugForm;
 
-	public DrugDTO() {
+	public AddDrugDto() {
 	}
 
-	public DrugDTO(Drug data) {
-		this.drugId = data.getDrugId();
+	public AddDrugDto(Drug data) {
 		this.genericName = data.getGenericName();
 		this.brandName = data.getBrandName();
 		this.composition = data.getComposition();
@@ -63,5 +56,4 @@ public class DrugDTO {
 		this.avlQntyInWhole = data.getAvlQntyInWhole();
 		this.avlQntyInTrimmed = data.getAvlQntyInTrimmed();
 	}
-
 }

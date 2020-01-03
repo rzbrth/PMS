@@ -1,50 +1,75 @@
 package com.rzb.pms.controller;
 
 import java.util.List;
-import java.util.Optional;
+
+import javax.validation.Valid;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.rzb.pms.exception.CustomEntityNotFoundException;
-import com.rzb.pms.model.Drugs;
+import com.rzb.pms.config.ResponseSchema;
+import com.rzb.pms.dto.AddDrugDto;
+import com.rzb.pms.dto.DrugDTO;
+import com.rzb.pms.log.Log;
 import com.rzb.pms.service.DrugService;
 import com.rzb.pms.utils.Endpoints;
+import com.rzb.pms.utils.ResponseUtil;
 
 @RestController
-@RequestMapping(value = Endpoints.VERSION_1)
+@RequestMapping(value = Endpoints.VERSION_1 + Endpoints.DRUG)
 public class DrugController {
-
-	Logger logger = LoggerFactory.getLogger(DrugController.class);
 
 	@Autowired
 	private DrugService drugService;
 
-	@GetMapping(Endpoints.DRUG_LIST)
-	public ResponseEntity<List<Drugs>> getAllDrugs(
-//			@RequestParam(value = "search") String search,
-//			@RequestParam(defaultValue = "0", required = false) Integer page,
-//			@RequestParam(defaultValue = "10", required = false) Integer size,
-//			@RequestParam(defaultValue = "createdAt:DESC", required = false) String sort
-	) throws CustomEntityNotFoundException {
-		// logger.info("Search Parameter: " + search);
-		// logger.info("Sort Parameter: " + sort);
+	@Log
+	private Logger logger;
 
-		return new ResponseEntity<List<Drugs>>(drugService.getAllDrugs(), HttpStatus.OK);
+	@GetMapping(Endpoints.ALL_MEDECINE)
+	public ResponseEntity<ResponseSchema<List<DrugDTO>>> getAllDrugs(@RequestParam(defaultValue = "0") Integer page,
+			@RequestParam(defaultValue = "10") Integer size) {
+		PageRequest pageRequest = PageRequest.of(page, size);
+		List<DrugDTO> data = drugService.findAllDrugs(pageRequest);
+
+		return new ResponseEntity<>(ResponseUtil.buildSuccessResponse(data, new ResponseSchema<List<DrugDTO>>()),
+				HttpStatus.OK);
+	}
+
+	@GetMapping(Endpoints.SEARCH_MEDECINE_BY_ID)
+	public ResponseEntity<ResponseSchema<DrugDTO>> getDrugById(@Valid @PathVariable String id) {
+
+		return new ResponseEntity<>(
+				ResponseUtil.buildSuccessResponse(drugService.getdrugById(id), new ResponseSchema<DrugDTO>()),
+				HttpStatus.OK);
 
 	}
 
-	@GetMapping(Endpoints.GET_DRUG_BY_ID)
-	public ResponseEntity<Optional<Drugs>> getDrugById(@PathVariable("id") String id) throws CustomEntityNotFoundException {
+	@PostMapping(Endpoints.ADD_DRUG)
+	public ResponseEntity<ResponseSchema<String>> addDrugInfo(@RequestBody AddDrugDto data) {
 
-		return new ResponseEntity<Optional<Drugs>>(drugService.getDrugById(id), HttpStatus.OK);
+		return new ResponseEntity<>(
+				ResponseUtil.buildSuccessResponse(drugService.addDrug(data), new ResponseSchema<String>()),
+				HttpStatus.OK);
+
 	}
 
+	@PutMapping(Endpoints.UPDATE_DRUG_BY_ID)
+	public ResponseEntity<ResponseSchema<String>> updateDrugInfo(@RequestBody AddDrugDto data,
+			@Valid @PathVariable String drugId) {
+
+		return new ResponseEntity<>(ResponseUtil.buildSuccessResponse(drugService.updateDrugData(data, drugId),
+				new ResponseSchema<String>()), HttpStatus.OK);
+
+	}
 }

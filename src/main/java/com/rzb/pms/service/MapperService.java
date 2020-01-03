@@ -5,32 +5,32 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.rzb.pms.model.DrugPharma;
-import com.rzb.pms.model.GenericPharma;
-import com.rzb.pms.repository.DrugPharmaRepository;
-import com.rzb.pms.repository.GenericPharmaRepository;
+import com.rzb.pms.model.Drug;
+import com.rzb.pms.model.Generic;
+import com.rzb.pms.repository.DrugRepository;
+import com.rzb.pms.repository.GenericRepository;
 
 @Service
 public class MapperService {
 	@Autowired
-	private GenericPharmaRepository genericPharmaRepository;
+	private GenericRepository genericRepository;
 
 	@Autowired
-	private DrugPharmaRepository drugPharmaRepository;
+	private DrugRepository drugRepository;
 
 	public String mapData() {
 
-		List<DrugPharma> drugData = drugPharmaRepository.findAll();
-		List<GenericPharma> genericData = genericPharmaRepository.findAll();
+		List<Drug> drugData = drugRepository.findAll();
+		List<Generic> genericData = genericRepository.findAll();
 
-		for (GenericPharma data : genericData) {
-			for (DrugPharma drugs : drugData) {
+		for (Generic data : genericData) {
+			for (Drug drugs : drugData) {
 				String input = data.getName(); 
 				boolean isPresent = input.indexOf(drugs.getComposition()) != -1 ? true : false;
 				if (isPresent) {
 
-					drugs.setGenericId(data.getId());
-					drugPharmaRepository.save(drugs);
+					drugs.setGenericId(data.getGenericId());
+					drugRepository.save(drugs);
 				}
 
 			}

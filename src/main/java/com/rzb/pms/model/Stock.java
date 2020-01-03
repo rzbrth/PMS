@@ -32,17 +32,19 @@ public class Stock {
 
 	@OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 	@JoinColumn(name = "drugId", nullable = false, unique = true)
-	private Drugs drugs;
+	private Drug drugs;
 
-	//@CreationTimestamp
 	private String stockCreatedAt;
 
-	//@UpdateTimestamp
 	private String stockUpdatedAt;
+
+	private String cretaedBy;
 
 	private String purchaseDate;
 
 	private String expireDate;
+
+	private Double availableQuantity;
 
 	@OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 	@JoinColumn(name = "distributerId", nullable = false, unique = true)
