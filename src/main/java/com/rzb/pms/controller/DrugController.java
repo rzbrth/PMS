@@ -19,8 +19,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.rzb.pms.config.ResponseSchema;
-import com.rzb.pms.dto.AddDrugDto;
 import com.rzb.pms.dto.DrugDTO;
+import com.rzb.pms.dto.DrugDtoReqRes;
 import com.rzb.pms.log.Log;
 import com.rzb.pms.service.DrugService;
 import com.rzb.pms.utils.Endpoints;
@@ -56,7 +56,7 @@ public class DrugController {
 	}
 
 	@PostMapping(Endpoints.ADD_DRUG)
-	public ResponseEntity<ResponseSchema<String>> addDrugInfo(@RequestBody AddDrugDto data) {
+	public ResponseEntity<ResponseSchema<String>> addDrugInfo(@RequestBody DrugDtoReqRes data) {
 
 		return new ResponseEntity<>(
 				ResponseUtil.buildSuccessResponse(drugService.addDrug(data), new ResponseSchema<String>()),
@@ -65,11 +65,47 @@ public class DrugController {
 	}
 
 	@PutMapping(Endpoints.UPDATE_DRUG_BY_ID)
-	public ResponseEntity<ResponseSchema<String>> updateDrugInfo(@RequestBody AddDrugDto data,
+	public ResponseEntity<ResponseSchema<String>> updateDrugInfo(@RequestBody DrugDtoReqRes data,
 			@Valid @PathVariable String drugId) {
 
 		return new ResponseEntity<>(ResponseUtil.buildSuccessResponse(drugService.updateDrugData(data, drugId),
 				new ResponseSchema<String>()), HttpStatus.OK);
+
+	}
+
+	@GetMapping(Endpoints.GET_DRUG_BY_GENERIC_ID)
+	public ResponseEntity<ResponseSchema<List<DrugDTO>>> getDrugByGenericId(@Valid @PathVariable String genericId,
+			@RequestParam(defaultValue = "0") Integer page, @RequestParam(defaultValue = "10") Integer size) {
+		PageRequest pageRequest = PageRequest.of(page, size);
+
+		return new ResponseEntity<>(
+				ResponseUtil.buildSuccessResponse(drugService.getDrugByGenericId(genericId, pageRequest),
+						new ResponseSchema<List<DrugDTO>>()),
+				HttpStatus.OK);
+
+	}
+
+	@GetMapping(Endpoints.GET_DRUG_BY_GENERIC_NAME)
+	public ResponseEntity<ResponseSchema<List<DrugDTO>>> getDrugByGenericName(@Valid @PathVariable String genericName,
+			@RequestParam(defaultValue = "0") Integer page, @RequestParam(defaultValue = "10") Integer size) {
+		PageRequest pageRequest = PageRequest.of(page, size);
+
+		return new ResponseEntity<>(
+				ResponseUtil.buildSuccessResponse(drugService.getDrugByGenericName(genericName, pageRequest),
+						new ResponseSchema<List<DrugDTO>>()),
+				HttpStatus.OK);
+
+	}
+
+	@GetMapping(Endpoints.GET_DRUG_BY_COMPOSITION)
+	public ResponseEntity<ResponseSchema<List<DrugDTO>>> getDrugByComposition(@Valid @PathVariable String composition,
+			@RequestParam(defaultValue = "0") Integer page, @RequestParam(defaultValue = "10") Integer size) {
+		PageRequest pageRequest = PageRequest.of(page, size);
+
+		return new ResponseEntity<>(
+				ResponseUtil.buildSuccessResponse(drugService.getDrugByComposition(composition, pageRequest),
+						new ResponseSchema<List<DrugDTO>>()),
+				HttpStatus.OK);
 
 	}
 }

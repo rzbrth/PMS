@@ -14,11 +14,14 @@ public class Endpoints {
     
 	//Drug
 	public static final String DRUG = "/drug"; 
-	//public static final String GET_DRUG_BY_GENERIC = GENERIC + "/{id}" + DRUG ;
+	public static final String GET_DRUG_BY_GENERIC_ID = GENERIC + "/{genericId}" + DRUG ;
+	public static final String GET_DRUG_BY_GENERIC_NAME = GENERIC + "/{genericName}";
 	public static final String ALL_MEDECINE = "/findAll";
 	public static final String SEARCH_MEDECINE_BY_ID = "/{drugId}";
 	public static final String ADD_DRUG = "/addDrug";
 	public static final String UPDATE_DRUG_BY_ID ="/{drugId}";
+	public static final String GET_DRUG_BY_COMPOSITION ="/substitute/{composition}";
+
 	
 	//Manufactueres
 	public static final String MANUFACTURES = "/manufacturers"; 

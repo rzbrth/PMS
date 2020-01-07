@@ -11,7 +11,7 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 @Builder
-public class AddDrugDto {
+public class DrugDtoReqRes {
 
 	private String genericName;
 
@@ -39,10 +39,10 @@ public class AddDrugDto {
 
 	private String drugForm;
 
-	public AddDrugDto() {
+	public DrugDtoReqRes() {
 	}
 
-	public AddDrugDto(Drug data) {
+	public DrugDtoReqRes(Drug data) {
 		this.genericName = data.getGenericName();
 		this.brandName = data.getBrandName();
 		this.composition = data.getComposition();

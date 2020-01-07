@@ -11,4 +11,6 @@ public interface GenericRepository extends JpaRepository<Generic, String>, CrudR
 
 	Generic findByNameLike(String name);
 
+	Generic findByGenericId(String genericId);
+
 }
