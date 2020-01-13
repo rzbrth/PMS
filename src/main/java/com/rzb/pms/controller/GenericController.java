@@ -21,6 +21,9 @@ import com.rzb.pms.service.GenericService;
 import com.rzb.pms.utils.Endpoints;
 import com.rzb.pms.utils.ResponseUtil;
 
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+
 @RestController
 @RequestMapping(value = Endpoints.VERSION_1 + Endpoints.GENERIC)
 public class GenericController {
@@ -29,29 +32,32 @@ public class GenericController {
 	private GenericService genericService;
 
 	@GetMapping(Endpoints.ALL_GENERIC)
+	@ApiOperation("Get all generic details")
 	public ResponseEntity<ResponseSchema<List<GenericDto>>> getAllGenericPharma(
 			@RequestParam(defaultValue = "0") Integer page, @RequestParam(defaultValue = "10") Integer size) {
 		PageRequest pageRequest = PageRequest.of(page, size);
 		List<GenericDto> data = genericService.findAllGenerics(pageRequest);
 
-		return new ResponseEntity<>(
-				ResponseUtil.buildSuccessResponse(data, new ResponseSchema<List<GenericDto>>()),
+		return new ResponseEntity<>(ResponseUtil.buildSuccessResponse(data, new ResponseSchema<List<GenericDto>>()),
 				HttpStatus.OK);
 	}
 
 	@GetMapping(Endpoints.SEARCH_GENERIC_BY_ID)
-	public ResponseEntity<ResponseSchema<GenericDto>> getGenericById(@Valid @PathVariable("id") String id) {
+	@ApiOperation("Find generic by id")
+	public ResponseEntity<ResponseSchema<GenericDto>> getGenericById(
+			@ApiParam(value = "Generic Id", required = true) @Valid @PathVariable String genericId) {
 
-		return new ResponseEntity<>(
-				ResponseUtil.buildSuccessResponse(genericService.getGenericById(id), new ResponseSchema<GenericDto>()),
-				HttpStatus.OK);
+		return new ResponseEntity<>(ResponseUtil.buildSuccessResponse(genericService.getGenericById(genericId),
+				new ResponseSchema<GenericDto>()), HttpStatus.OK);
 	}
-	
-	@GetMapping(Endpoints.SEARCH_GENERIC_BY_NAME)
-	public ResponseEntity<ResponseSchema<GenericResponseByName>> getGenericByName(@Valid @PathVariable("name") String name) {
 
-		return new ResponseEntity<>(
-				ResponseUtil.buildSuccessResponse(genericService.getGenericByName(name), new ResponseSchema<GenericResponseByName>()),
-				HttpStatus.OK);
+	@GetMapping(Endpoints.SEARCH_GENERIC_BY_NAME)
+	@ApiOperation("Find generic by name")
+
+	public ResponseEntity<ResponseSchema<GenericResponseByName>> getGenericByName(
+			@ApiParam(value = "Generic Name", required = true) @Valid @PathVariable("name") String name) {
+
+		return new ResponseEntity<>(ResponseUtil.buildSuccessResponse(genericService.getGenericByName(name),
+				new ResponseSchema<GenericResponseByName>()), HttpStatus.OK);
 	}
 }

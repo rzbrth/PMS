@@ -1,10 +1,9 @@
 package com.rzb.pms.model;
 
-import java.util.List;
-
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.OneToMany;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -19,9 +18,10 @@ import lombok.NoArgsConstructor;
 public class Customer {
 
 	@Id
+	@GeneratedValue(strategy = GenerationType.SEQUENCE)
+	private Integer customerId;
+	
 	private String mobileNumber;
-
-	@OneToMany
-	private List<SellAudit> audit;
+	private String name;
 
 }

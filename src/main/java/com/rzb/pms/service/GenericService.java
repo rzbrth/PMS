@@ -25,8 +25,12 @@ public class GenericService {
 	@Log
 	private Logger log;
 
+	private final GenericRepository genericRepository;
+
 	@Autowired
-	private GenericRepository genericRepository;
+	public GenericService(GenericRepository genericRepository) {
+		this.genericRepository = genericRepository;
+	}
 
 	public List<GenericDto> findAllGenerics(Pageable pageable) {
 

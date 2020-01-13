@@ -3,6 +3,8 @@ package com.rzb.pms.model;
 import java.util.Date;
 
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
 import lombok.AllArgsConstructor;
@@ -15,9 +17,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class AddToCart {
+public class DrugDispense {
 
 	@Id
+	@GeneratedValue(strategy = GenerationType.SEQUENCE)
+	private Integer dispenseId;
+	
 	private String mobileNumber;
 
 	private String drugId;
@@ -53,5 +58,7 @@ public class AddToCart {
 	private Date expiryDate;
 
 	private String drugForm;
+
+	private String customerName;
 
 }

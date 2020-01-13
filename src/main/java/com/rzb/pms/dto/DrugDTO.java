@@ -5,7 +5,6 @@ import java.util.Date;
 import javax.validation.constraints.NotNull;
 
 import com.rzb.pms.model.Drug;
-import com.rzb.pms.utils.BeanUtil;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,7 +15,7 @@ import lombok.Data;
 @Builder
 public class DrugDTO {
 
-	@NotNull(message = "Id can't be null")
+	//@NotNull(message = "Id can't be null")
 	private String drugId;
 
 	private String genericName;

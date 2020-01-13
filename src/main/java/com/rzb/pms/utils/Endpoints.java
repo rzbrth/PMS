@@ -9,8 +9,8 @@ public class Endpoints {
 	//Generic
 	public static final String GENERIC = "/generic";
 	public static final String ALL_GENERIC = "/findAll";
-	public static final String SEARCH_GENERIC_BY_ID = "/{genericId}";
-	public static final String SEARCH_GENERIC_BY_NAME = "/{name}";
+	public static final String SEARCH_GENERIC_BY_ID = "/id/{genericId}";
+	public static final String SEARCH_GENERIC_BY_NAME = "/name/{name}";
     
 	//Drug
 	public static final String DRUG = "/drug"; 
@@ -32,7 +32,7 @@ public class Endpoints {
 	//Autocomplete
 	
 	public static final String AUTOCOMPLETE = "/autocomplete";
-	public static final String MEDECINE_AUTOCOMPLETE = DRUG + MANUFACTURES;
+	public static final String MEDECINE_AUTOCOMPLETE = DRUG;
 	//public static final String GENERIC_AUTOCOMPLETE = GENERIC + MANUFACTURES;
 	
 	//Cart

@@ -2,17 +2,17 @@ package com.rzb.pms.dto;
 
 import java.util.List;
 
-import com.rzb.pms.model.AddToCart;
+import com.rzb.pms.model.DrugDispense;
 
 public class AddToCartWrapper {
 
-	private List<AddToCart> cart;
+	private List<DrugDispense> cart;
 
-	public List<AddToCart> getCart() {
+	public List<DrugDispense> getCart() {
 		return cart;
 	}
 
-	public void setCart(List<AddToCart> cart) {
+	public void setCart(List<DrugDispense> cart) {
 		this.cart = cart;
 	}
 	

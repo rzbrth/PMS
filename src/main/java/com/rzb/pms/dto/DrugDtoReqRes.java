@@ -2,6 +2,7 @@ package com.rzb.pms.dto;
 
 import java.util.Date;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.rzb.pms.model.Drug;
 
 import lombok.AllArgsConstructor;
@@ -31,6 +32,7 @@ public class DrugDtoReqRes {
 
 	private String location;
 
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	private Date expiryDate;
 
 	private Double avlQntyInWhole;

@@ -31,11 +31,11 @@ import lombok.NoArgsConstructor;
 public class Generic {
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "drug_generic_id_seq")
-	@GenericGenerator(name = "generic_id_seq", strategy = "com.rzb.pms.utils.PrefixSeqGen", parameters = {
-			@Parameter(name = PrefixSeqGen.INCREMENT_PARAM, value = "1"),
-			@Parameter(name = PrefixSeqGen.VALUE_PREFIX_PARAMETER, value = "GEN"),
-			@Parameter(name = PrefixSeqGen.NUMBER_FORMAT_PARAMETER, value = "%05d") })
+	@GeneratedValue(strategy = GenerationType.SEQUENCE)
+//	@GenericGenerator(name = "generic_id_seq", strategy = "com.rzb.pms.utils.PrefixSeqGen", parameters = {
+//			@Parameter(name = PrefixSeqGen.INCREMENT_PARAM, value = "1"),
+//			@Parameter(name = PrefixSeqGen.VALUE_PREFIX_PARAMETER, value = "GEN"),
+//			@Parameter(name = PrefixSeqGen.NUMBER_FORMAT_PARAMETER, value = "%05d") })
 	private String genericId;
 
 	private String name;

@@ -12,20 +12,22 @@ import org.springframework.web.bind.annotation.RestController;
 import com.rzb.pms.config.ResponseSchema;
 import com.rzb.pms.dto.AddToCartWrapper;
 import com.rzb.pms.log.Log;
-import com.rzb.pms.model.AddToCart;
-import com.rzb.pms.service.AddToCartService;
+import com.rzb.pms.model.DrugDispense;
+import com.rzb.pms.service.DrugDispensingService;
 import com.rzb.pms.utils.Endpoints;
 import com.rzb.pms.utils.ResponseUtil;
 
+import io.swagger.annotations.ApiOperation;
+
 @RestController
 @RequestMapping(Endpoints.VERSION_1 + Endpoints.CART)
-public class AddToCartController {
+public class DrugDispenseController {
 
 	@Log
 	private Logger logger;
 
 	@Autowired
-	private AddToCartService cartService;
+	private DrugDispensingService cartService;
 
 //	@PostMapping(Endpoints.ADD_TO_CART)
 //	public ResponseEntity<ResponseSchema<String>> addLineItemToCart(@RequestBody List<AddToCart> cart){
@@ -36,10 +38,11 @@ public class AddToCartController {
 //	}
 	
 	@PostMapping(Endpoints.ADD_TO_CART)
-	public ResponseEntity<ResponseSchema<String>> addLineItemToCart(@RequestBody AddToCartWrapper wrpper) {
+	@ApiOperation("Dispense drug")
+	public ResponseEntity<ResponseSchema<String>> addLineItemDispenseList(@RequestBody AddToCartWrapper wrpper) {
 
-		for (AddToCart lineitem : wrpper.getCart()) {
-			cartService.addToCart(lineitem);
+		for (DrugDispense lineitem : wrpper.getCart()) {
+			cartService.drugDispense(lineitem);
 		}
 
 		return new ResponseEntity<>(ResponseUtil.buildSuccessResponse("Success", new ResponseSchema<String>()),

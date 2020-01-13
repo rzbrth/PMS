@@ -6,8 +6,6 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -62,11 +60,8 @@ public class SellAudit {
 	private Date expiryDate;
 
 	private String drugForm;
-	
 
-
-	@ManyToOne
-	@JoinColumn(name = "mobileNumber", insertable = false, updatable = false)
-	private Customer customer;
+	private Integer customerId;
+ 
 
 }

@@ -26,6 +26,9 @@ import com.rzb.pms.service.DrugService;
 import com.rzb.pms.utils.Endpoints;
 import com.rzb.pms.utils.ResponseUtil;
 
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+
 @RestController
 @RequestMapping(value = Endpoints.VERSION_1 + Endpoints.DRUG)
 public class DrugController {
@@ -37,7 +40,9 @@ public class DrugController {
 	private Logger logger;
 
 	@GetMapping(Endpoints.ALL_MEDECINE)
-	public ResponseEntity<ResponseSchema<List<DrugDTO>>> getAllDrugs(@RequestParam(defaultValue = "0") Integer page,
+	@ApiOperation("Get all drug data")
+	public ResponseEntity<ResponseSchema<List<DrugDTO>>> getAllDrugs(
+			@ApiParam(value = "Page Number, Page Size", required = true) @RequestParam(defaultValue = "0") Integer page,
 			@RequestParam(defaultValue = "10") Integer size) {
 		PageRequest pageRequest = PageRequest.of(page, size);
 		List<DrugDTO> data = drugService.findAllDrugs(pageRequest);
@@ -47,15 +52,18 @@ public class DrugController {
 	}
 
 	@GetMapping(Endpoints.SEARCH_MEDECINE_BY_ID)
-	public ResponseEntity<ResponseSchema<DrugDTO>> getDrugById(@Valid @PathVariable String id) {
+	@ApiOperation("Find drug by drug id")
+	public ResponseEntity<ResponseSchema<DrugDTO>> getDrugById(
+			@ApiParam(value = "Drug Id", required = true) @Valid @PathVariable String drugId) {
 
 		return new ResponseEntity<>(
-				ResponseUtil.buildSuccessResponse(drugService.getdrugById(id), new ResponseSchema<DrugDTO>()),
+				ResponseUtil.buildSuccessResponse(drugService.getdrugById(drugId), new ResponseSchema<DrugDTO>()),
 				HttpStatus.OK);
 
 	}
 
 	@PostMapping(Endpoints.ADD_DRUG)
+	@ApiOperation("Save drug information")
 	public ResponseEntity<ResponseSchema<String>> addDrugInfo(@RequestBody DrugDtoReqRes data) {
 
 		return new ResponseEntity<>(
@@ -65,8 +73,10 @@ public class DrugController {
 	}
 
 	@PutMapping(Endpoints.UPDATE_DRUG_BY_ID)
-	public ResponseEntity<ResponseSchema<String>> updateDrugInfo(@RequestBody DrugDtoReqRes data,
-			@Valid @PathVariable String drugId) {
+	@ApiOperation("Update drug info by using drug id")
+	public ResponseEntity<ResponseSchema<String>> updateDrugInfo(@ApiParam(value = "Drug Id", required = true)
+
+	@RequestBody DrugDtoReqRes data, @Valid @PathVariable String drugId) {
 
 		return new ResponseEntity<>(ResponseUtil.buildSuccessResponse(drugService.updateDrugData(data, drugId),
 				new ResponseSchema<String>()), HttpStatus.OK);
@@ -74,7 +84,9 @@ public class DrugController {
 	}
 
 	@GetMapping(Endpoints.GET_DRUG_BY_GENERIC_ID)
-	public ResponseEntity<ResponseSchema<List<DrugDTO>>> getDrugByGenericId(@Valid @PathVariable String genericId,
+	@ApiOperation("Find drug info by using generic id")
+	public ResponseEntity<ResponseSchema<List<DrugDTO>>> getDrugByGenericId(
+			@ApiParam(value = "Generic Id", required = true) @Valid @PathVariable String genericId,
 			@RequestParam(defaultValue = "0") Integer page, @RequestParam(defaultValue = "10") Integer size) {
 		PageRequest pageRequest = PageRequest.of(page, size);
 
@@ -86,7 +98,10 @@ public class DrugController {
 	}
 
 	@GetMapping(Endpoints.GET_DRUG_BY_GENERIC_NAME)
-	public ResponseEntity<ResponseSchema<List<DrugDTO>>> getDrugByGenericName(@Valid @PathVariable String genericName,
+	@ApiOperation("Find drug info by using generic name")
+
+	public ResponseEntity<ResponseSchema<List<DrugDTO>>> getDrugByGenericName(
+			@ApiParam(value = "Generic Name", required = true) @Valid @PathVariable String genericName,
 			@RequestParam(defaultValue = "0") Integer page, @RequestParam(defaultValue = "10") Integer size) {
 		PageRequest pageRequest = PageRequest.of(page, size);
 
@@ -98,7 +113,9 @@ public class DrugController {
 	}
 
 	@GetMapping(Endpoints.GET_DRUG_BY_COMPOSITION)
-	public ResponseEntity<ResponseSchema<List<DrugDTO>>> getDrugByComposition(@Valid @PathVariable String composition,
+	@ApiOperation("Find drug info by using drug composition")
+	public ResponseEntity<ResponseSchema<List<DrugDTO>>> getDrugByComposition(
+			@ApiParam(value = "Drug Composition, Page Number, Page Size", required = true) @Valid @PathVariable String composition,
 			@RequestParam(defaultValue = "0") Integer page, @RequestParam(defaultValue = "10") Integer size) {
 		PageRequest pageRequest = PageRequest.of(page, size);
 
