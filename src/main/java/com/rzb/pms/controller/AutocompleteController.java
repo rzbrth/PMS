@@ -35,8 +35,7 @@ public class AutocompleteController {
 	@GetMapping(Endpoints.MEDECINE_AUTOCOMPLETE)
 	@ApiOperation("Search medecine by genericanme, brandName, company, composition, location")
 	public ResponseEntity<ResponseSchema<DrugSearchResponse>> getAllDrugs(
-			@ApiParam(value = "Search Param", required = true)
-			@RequestParam(value = "search") String search,
+			@ApiParam(value = "Search Param", required = true, allowableValues = "genericanme, brandName, company, composition, location", example = "brandName=lk=COSACOL") @RequestParam(value = "search") String search,
 			@RequestParam(defaultValue = "0", required = false) Integer page,
 			@RequestParam(defaultValue = "10", required = false) Integer size,
 			@RequestParam(defaultValue = "mrp:DESC", required = false) String sort) {
