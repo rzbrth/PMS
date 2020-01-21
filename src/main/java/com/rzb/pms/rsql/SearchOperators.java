@@ -1,4 +1,4 @@
-package com.rzb.pms.specification;
+package com.rzb.pms.rsql;
 
 import org.springframework.http.HttpStatus;
 

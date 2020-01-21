@@ -7,4 +7,5 @@ public class BeanUtil {
 		return s.replaceAll("()\\.0+$|(\\..+?)0+$", "$2");
 
 	}
+
 }

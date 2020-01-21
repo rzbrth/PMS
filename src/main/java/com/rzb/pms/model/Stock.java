@@ -1,15 +1,14 @@
 package com.rzb.pms.model;
 
-import javax.persistence.CascadeType;
+import java.util.Date;
+
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToOne;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -20,6 +19,7 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
+@Builder
 @Entity
 public class Stock {
 
@@ -27,24 +27,46 @@ public class Stock {
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private Integer stockId;
 
-	@OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-	@JoinColumn(name = "drugId", nullable = false, unique = true)
-	private Drug drugs;
+//	@OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+//	@JoinColumn(name = "drugId", nullable = false)
+//	private Drug drugs;
 
-	private String stockCreatedAt;
+	private String drugId;
 
-	private String stockUpdatedAt;
+	private Date stockCreatedAt;
 
-	private String cretaedBy;
+	private Date stockUpdatedAt;
 
-	private String purchaseDate;
+	private String createddBy;
+	
+	private String updatedBy;
 
-	private String expireDate;
+	private Integer packing;
 
-	private Double availableQuantity;
+	private Float mrp;
 
-	@OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-	@JoinColumn(name = "distributerId", nullable = false, unique = true)
-	private Distributer distributer;
+	private Float unitPrice;
+
+	private String genericId;
+
+	private String location;
+
+	private Date expiryDate;
+
+	private Double avlQntyWhole;
+
+	private Double avlQntyTrimmed;
+
+//	@OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+//	@JoinColumn(name = "distributerId", nullable = false)
+//	private Distributer distributer;
+
+	private Integer distributerId;
+
+	private String stockType;
+	
+	private String invoiceReference;
+
+	private Integer poId;
 
 }

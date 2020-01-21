@@ -11,18 +11,18 @@ public class ResponseUtil {
 	private ResponseUtil() {
 	}
 
-	public static <T> ResponseSchema<T> buildSuccessResponse(T data, ResponseSchema<T> responseSchema) {
+	public static <T> ResponseSchema<T> buildSuccessResponse(T result, ResponseSchema<T> responseSchema) {
 		responseSchema.setStatusCode(200);
 		responseSchema.setMessage("success");
-		responseSchema.setData(data);
+		responseSchema.setResult(result);
 		return responseSchema;
 	}
 
-	public static <T> ResponseSchema<T> buildFailedResponse(String failedMessage, T data,
+	public static <T> ResponseSchema<T> buildFailedResponse(String failedMessage, T result,
 			ResponseSchema<T> responseSchema) {
 		responseSchema.setStatusCode(200);
 		responseSchema.setMessage(failedMessage);
-		responseSchema.setData(data);
+		responseSchema.setResult(result);
 		return responseSchema;
 	}
 }

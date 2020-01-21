@@ -1,12 +1,11 @@
 package com.rzb.pms.model;
 
 import java.util.Date;
+import java.util.List;
 
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.SequenceGenerator;
+import javax.persistence.OneToMany;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -21,12 +20,6 @@ import lombok.NoArgsConstructor;
 public class Drug {
 
 	@Id
-//	@GeneratedValue(generator = "drug_id_seq")
-//	@GenericGenerator(name = "drug_id_seq", strategy = "drug_id_seq")
-//	@GenericGenerator(name = "drug_id_seq", strategy = "com.rzb.pms.utils.PrefixSeqGen", parameters = {
-//			@Parameter(name = PrefixSeqGen.INCREMENT_PARAM, value = "1"),
-//			@Parameter(name = PrefixSeqGen.VALUE_PREFIX_PARAMETER, value = "TD"),
-//			@Parameter(name = PrefixSeqGen.NUMBER_FORMAT_PARAMETER, value = "%05d") })
 	private String drugId;
 
 	private String genericName;
@@ -58,4 +51,6 @@ public class Drug {
 //	@JoinColumn(name = "genericId", referencedColumnName = "id", insertable = false, updatable = false)
 //	private GenericPharma genericPharma;
 
+//	@OneToMany(mappedBy = "drugs")
+//	private List<PoDrug> data;
 }

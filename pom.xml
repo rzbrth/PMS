@@ -145,6 +145,12 @@
 			<artifactId>springfox-swagger2</artifactId>
 			<version>2.9.2</version>
 		</dependency>
+		<!-- https://github.com/perplexhub/rsql-jpa-specification -->
+		<dependency>
+			<groupId>io.github.perplexhub</groupId>
+			<artifactId>rsql-querydsl-spring-boot-starter</artifactId>
+			<version>5.0.1</version>
+		</dependency>
 
 	</dependencies>
 

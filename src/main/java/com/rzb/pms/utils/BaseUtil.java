@@ -1,5 +1,6 @@
 package com.rzb.pms.utils;
 
+import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
@@ -7,11 +8,11 @@ import org.springframework.http.HttpStatus;
 
 import com.rzb.pms.exception.CustomException;
 import com.rzb.pms.log.Log;
-import com.rzb.pms.specification.SearchCriteria;
-import com.rzb.pms.specification.SearchKey;
-import com.rzb.pms.specification.SearchOperators;
+import com.rzb.pms.rsql.SearchCriteria;
+import com.rzb.pms.rsql.SearchKey;
+import com.rzb.pms.rsql.SearchOperators;
 
-public class DrugUtil {
+public class BaseUtil {
 
 	@Log
 	private static Logger logger;
@@ -41,7 +42,6 @@ public class DrugUtil {
 					if (sortObj == null) {
 						sortObj = Sort.by(Direction.fromString(sortOrder), sortBy);
 					} else {
-						// sortObj = sortObj.and(new Sort(Direction.fromString(sortOrder), sortBy));
 						sortObj = sortObj.and(Sort.by(Direction.fromString(sortOrder), sortBy));
 					}
 				} else {
@@ -51,6 +51,22 @@ public class DrugUtil {
 							HttpStatus.NOT_FOUND);
 
 				}
+			} else if (sortBy.equalsIgnoreCase("createdDate") || sortBy.equalsIgnoreCase("updatedDate")) {
+
+				if ("ASC".equals(sortOrder) || "DESC".equals(sortOrder)) {
+					if (sortObj == null) {
+						sortObj = Sort.by(Direction.fromString(sortOrder), sortBy);
+					} else {
+						sortObj = sortObj.and(Sort.by(Direction.fromString(sortOrder), sortBy));
+					}
+				} else {
+					logger.error("Please give a proper sort Order like ASC(Ascending) or DSC(Descending) ",
+							HttpStatus.NOT_FOUND);
+					throw new CustomException("Please give a proper sort Order like ASC(Ascending) or DSC(Descending) ",
+							HttpStatus.NOT_FOUND);
+
+				}
+
 			} else {
 				logger.error("Please give a proper sort argument Like expiryDate, unitPrice, mrp",
 						HttpStatus.NOT_FOUND);
@@ -69,18 +85,24 @@ public class DrugUtil {
 	 * company, composition, location and Supported Search operators are ==, >=,=lk=
 	 * ,<
 	 */
+	// "id=bt=(2,4)";// id>=2 && id<=4 //between
 	public static SearchCriteria getCriteria(String queryParam) {
-		String[] o = queryParam.split("==|>=|=lk=|<");
+		Object value = null;
+		String key, operator = null;
+		String[] o = queryParam.split("==|>=|=lk=|<|=bt=");
 		if (o.length < 2) {
 			logger.error("Please provide proper search Criteria, Supported operators are ==, >=,=lk= ,< ",
 					HttpStatus.BAD_REQUEST);
 			throw new CustomException("Please provide proper search Criteria, Supported operators are ==, >=,=lk= ,< ",
 					HttpStatus.BAD_REQUEST);
 		}
-		String operator = queryParam.substring(o[0].length(), queryParam.length() - o[1].length()).replaceAll("\\s+",
-				"");
-		Object value = o[1].trim().replaceAll("\\s+", " ");
-		String key = o[0].replaceAll("\\s+", "");
+		operator = queryParam.substring(o[0].length(), queryParam.length() - o[1].length()).replaceAll("\\s+", "");
+		if (operator.equalsIgnoreCase("=bt=")) {
+
+			value = null;
+		}
+		value = o[1].trim().replaceAll("\\s+", " ");
+		key = o[0].replaceAll("\\s+", "");
 
 		switch (SearchKey.getKeyData(key)) {
 
@@ -143,14 +165,14 @@ public class DrugUtil {
 			} else {
 				return new SearchCriteria(key, operator, value);
 			}
-		}
 
+		}
 		default:
-			logger.error(
-					"Please Provide right search parameter . Like genericanme, brandName, company, composition, location",
-					HttpStatus.BAD_REQUEST);
+			logger.error("Please Provide right search parameter . Like genericanme, brandName, company, composition, "
+					+ "location, cretedBy, updatedBy, createdDate, updatedDate", HttpStatus.BAD_REQUEST);
 			throw new CustomException(
-					"Please Provide right search parameter . Like genericanme, brandName, company, composition, location",
+					"Please Provide right search parameter . Like genericanme, brandName, company, composition, "
+							+ "location, cretedBy, updatedBy, createdDate, updatedDate",
 					HttpStatus.BAD_REQUEST);
 		}
 	}
@@ -160,4 +182,8 @@ public class DrugUtil {
 		return ((100 - discount) * mrp) / 100;
 	}
 
+	public static String getRandomPoReference() {
+
+		return "PO" + RandomStringUtils.randomAlphabetic(4);
+	}
 }

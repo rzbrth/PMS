@@ -1,4 +1,4 @@
-package com.rzb.pms.specification;
+package com.rzb.pms.rsql;
 
 import org.springframework.http.HttpStatus;
 
@@ -31,6 +31,7 @@ public enum SearchKey {
 			return COMPANY;
 		} else if (SearchKey.LOCATION.getName().equalsIgnoreCase(key)) {
 			return LOCATION;
+
 		} else {
 			throw new CustomException(
 					"Please Provide right Search parameter . Like genericName, brandName, composition, company, location",

@@ -6,7 +6,6 @@ import java.util.stream.Collectors;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
 import javax.transaction.Transactional;
 import javax.validation.Valid;
 
@@ -30,10 +29,10 @@ import com.rzb.pms.log.Log;
 import com.rzb.pms.model.Drug;
 import com.rzb.pms.model.QDrug;
 import com.rzb.pms.repository.DrugRepository;
-import com.rzb.pms.specification.GenericSpecification;
-import com.rzb.pms.specification.SearchCriteria;
+import com.rzb.pms.rsql.SearchCriteria;
+import com.rzb.pms.rsql.jpa.GenericSpecification;
+import com.rzb.pms.utils.BaseUtil;
 import com.rzb.pms.utils.CollectionMapper;
-import com.rzb.pms.utils.DrugUtil;
 
 /**
  * @author rajib.rath
@@ -106,7 +105,7 @@ public class DrugService {
 			String[] queryParams = search.split(";");
 			for (String queryParam : queryParams) {
 				// Invoking database query by providing search Criteria
-				SearchCriteria cri = DrugUtil.getCriteria(queryParam);
+				SearchCriteria cri = BaseUtil.getCriteria(queryParam);
 				if (spec == null) {
 					spec = Specification.where(new GenericSpecification<Drug>(cri));
 				} else {
@@ -178,7 +177,7 @@ public class DrugService {
 			throw new CustomEntityNotFoundException(Drug.class, genericId);
 		}
 
-		return CollectionMapper.mapDrugDtoReqResReqRes(data.getContent());
+		return CollectionMapper.mapDrugDtoDrugDTO(data.getContent());
 
 	}
 

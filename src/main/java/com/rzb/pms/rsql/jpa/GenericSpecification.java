@@ -1,4 +1,4 @@
-package com.rzb.pms.specification;
+package com.rzb.pms.rsql.jpa;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -14,6 +14,8 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 
 import com.rzb.pms.exception.CustomException;
+import com.rzb.pms.rsql.SearchCriteria;
+import com.rzb.pms.rsql.SearchOperators;
 
 public class GenericSpecification<T> implements Specification<T> {
 

@@ -15,13 +15,15 @@ import com.rzb.pms.config.ResponseSchema;
 import com.rzb.pms.dto.DrugSearchResponse;
 import com.rzb.pms.log.Log;
 import com.rzb.pms.service.DrugService;
-import com.rzb.pms.utils.DrugUtil;
+import com.rzb.pms.utils.BaseUtil;
 import com.rzb.pms.utils.Endpoints;
 import com.rzb.pms.utils.ResponseUtil;
 
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 
+@Api("")
 @RestController
 @RequestMapping(Endpoints.VERSION_1 + Endpoints.AUTOCOMPLETE)
 public class AutocompleteController {
@@ -42,14 +44,14 @@ public class AutocompleteController {
 		logger.info("Search Parameter: " + search);
 		logger.info("Sort Parameter: " + sort);
 
-		Sort sortCriteria = DrugUtil.getSortObject(sort);
+		Sort sortCriteria = BaseUtil.getSortObject(sort);
 		PageRequest pageRequest = PageRequest.of(page - 1, size, sortCriteria);
 		DrugSearchResponse response = drugService.search(search, pageRequest);
 		logger.info("Drug size: " + response.getTotalCount());
 
-		return new ResponseEntity<>(
+	 return  new ResponseEntity<>(
 				ResponseUtil.buildSuccessResponse(response, new ResponseSchema<DrugSearchResponse>()), HttpStatus.OK);
 
-	}
+	}                                                                  
 
 }

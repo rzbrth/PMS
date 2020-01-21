@@ -20,7 +20,7 @@ import com.rzb.pms.repository.DrugDispenseRepository;
 import com.rzb.pms.repository.CustomerRepository;
 import com.rzb.pms.repository.DrugRepository;
 import com.rzb.pms.repository.SellAuditRepository;
-import com.rzb.pms.utils.DrugUtil;
+import com.rzb.pms.utils.BaseUtil;
 
 @Service
 public class DrugDispensingService {
@@ -79,7 +79,7 @@ public class DrugDispensingService {
 				avlQntyInWhole = drugData.getAvlQntyInWhole() - reqQntyInWhole;
 				avlQntyInTrimmed = avlQntyInWhole * drugData.getPacking();
 			}
-			float itemSellPrice = DrugUtil.calculatePriceAfterDiscount(item.getMrp(), item.getDiscount());
+			float itemSellPrice = BaseUtil.calculatePriceAfterDiscount(item.getMrp(), item.getDiscount());
 			em.createNativeQuery("UPDATE drug SET avl_qnty_in_trimmed=?, avl_qnty_in_whole=? WHERE drug_id=?")
 					.setParameter(1, avlQntyInTrimmed).setParameter(2, avlQntyInWhole)
 					.setParameter(3, drugData.getDrugId()).executeUpdate();

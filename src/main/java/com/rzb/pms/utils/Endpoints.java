@@ -44,6 +44,16 @@ public class Endpoints {
 	
 	public static final String RETRIVE_FROM_CART = "/getCartItem";
 	
+	//Stock
+	public static final String STOCK ="/stock";
 	
+	public static final String ADD_STOCK_FROM_PO = "/po";
+	
+	public static final String UPDATE_STOCK = "/updateStock";
+
+	//Purchase Order
+	public static final String PO = "/po";
+	
+	public static final String PO_BY_ID = "/{poId}";
 	
 }

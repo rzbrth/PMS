@@ -16,6 +16,6 @@ public class ResponseSchema<T> {
 
 	private String message;
 
-	private T data;
+	private T result;
 
 }
