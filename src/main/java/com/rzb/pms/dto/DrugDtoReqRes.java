@@ -30,14 +30,8 @@ public class DrugDtoReqRes {
 
 	private String genericId;
 
-	private String location;
-
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	private Date expiryDate;
-
-	private Double avlQntyInWhole;
-
-	private Double avlQntyInTrimmed;
 
 	private String drugForm;
 
@@ -53,9 +47,6 @@ public class DrugDtoReqRes {
 		this.mrp = data.getMrp();
 		this.unitPrice = data.getUnitPrice();
 		this.genericId = data.getGenericId();
-		this.location = data.getLocation();
 		this.expiryDate = data.getExpiryDate();
-		this.avlQntyInWhole = data.getAvlQntyInWhole();
-		this.avlQntyInTrimmed = data.getAvlQntyInTrimmed();
 	}
 }

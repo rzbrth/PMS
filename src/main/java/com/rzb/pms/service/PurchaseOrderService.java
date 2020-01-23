@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -24,6 +25,7 @@ import com.rzb.pms.dto.PoLineItemUpdateDTO;
 import com.rzb.pms.dto.PoUpdateDTO;
 import com.rzb.pms.dto.PurchaseOrderDTO;
 import com.rzb.pms.dto.PurchaseOrderResponse;
+import com.rzb.pms.dto.ReferenceType;
 import com.rzb.pms.exception.CustomEntityNotFoundException;
 import com.rzb.pms.exception.CustomException;
 import com.rzb.pms.log.Log;
@@ -67,7 +69,7 @@ public class PurchaseOrderService {
 			 * id as fk save drug request to PoDrug.
 			 */
 			PurchaseOrder orderData = PurchaseOrder.builder().createdBy("").createdDate(new Date())
-					.poReference(BaseUtil.getRandomPoReference()).poStatus(OrderStatus.PENDING.toString()).build();
+					.poReference(BaseUtil.getRandomPoReference(ReferenceType.PO.toString())).poStatus(OrderStatus.PENDING.toString()).build();
 			em.persist(orderData);
 			em.flush();
 
@@ -96,7 +98,7 @@ public class PurchaseOrderService {
 			}
 
 			repository.save(PurchaseOrder.builder().updatedBy("").updatedDate(new Date())
-					.poReference(BaseUtil.getRandomPoReference()).poStatus(data.getPoStatus()).build());
+					.poStatus(data.getPoStatus()).build());
 
 //			em.createNativeQuery("UPDATE purchase_order SET updated_by = ?, updated_date = ? WHERE po_id = ?")
 //					.setParameter(1, "").setParameter(2, new Date()).setParameter(3, data.getPoDrugId())
@@ -128,11 +130,11 @@ public class PurchaseOrderService {
 	public List<PurchaseOrderResponse> findAllOrder(String filter, PageRequest pageRequest) {
 
 		List<PurchaseOrder> orderInfo = new ArrayList<PurchaseOrder>();
-		if (filter == null) {
+		if (StringUtils.isBlank(filter)) {
 			orderInfo = repository.findAll(pageRequest).getContent();
+		} else {
+			orderInfo = repository.findAll(toPredicate(filter, QPurchaseOrder.purchaseOrder), pageRequest).getContent();
 		}
-		orderInfo = repository.findAll(toPredicate(filter, QPurchaseOrder.purchaseOrder), pageRequest).getContent();
-
 		if (orderInfo.isEmpty()) {
 			logger.error("No purchase order available", HttpStatus.NOT_FOUND);
 			throw new CustomException("No purchase order available", HttpStatus.NOT_FOUND);

@@ -6,6 +6,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.http.HttpStatus;
 
+import com.rzb.pms.dto.ReferenceType;
 import com.rzb.pms.exception.CustomException;
 import com.rzb.pms.log.Log;
 import com.rzb.pms.rsql.SearchCriteria;
@@ -182,8 +183,21 @@ public class BaseUtil {
 		return ((100 - discount) * mrp) / 100;
 	}
 
-	public static String getRandomPoReference() {
+	public static String stripTrailingZero(String s) {
 
-		return "PO" + RandomStringUtils.randomAlphabetic(4);
+		return s.replaceAll("()\\.0+$|(\\..+?)0+$", "$2");
+
+	}
+
+	public static String getRandomPoReference(String type) {
+
+		if (ReferenceType.PO.toString().equalsIgnoreCase(type)) {
+			return "PO-" + RandomStringUtils.randomAlphabetic(4);
+		} else if (ReferenceType.DIRECT_STOCK.toString().equalsIgnoreCase(type)) {
+			return "DIR-" + RandomStringUtils.randomAlphabetic(4);
+		}else {
+			return "";
+		}
+
 	}
 }

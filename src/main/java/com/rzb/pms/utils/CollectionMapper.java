@@ -3,18 +3,25 @@ package com.rzb.pms.utils;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import com.rzb.pms.dto.DrugDTO;
 import com.rzb.pms.dto.PoDrugDTO;
 import com.rzb.pms.dto.PurchaseOrderDTO;
 import com.rzb.pms.model.Drug;
-import com.rzb.pms.model.PoDrug;
 import com.rzb.pms.model.PurchaseOrder;
+import com.rzb.pms.repository.StockRepository;
 
 /*
  *Generic class to transform collections between different types
 
  */
+@Component
 public abstract class CollectionMapper<FROM, TO> {
+	
+	@Autowired
+	private static StockRepository stockRepository;
 
 	abstract TO transformCollection(FROM from);
 
@@ -32,10 +39,13 @@ public abstract class CollectionMapper<FROM, TO> {
 
 			@Override
 			DrugDTO transformCollection(Drug e) {
-
+				List<String> location = new ArrayList<String>();
+				for(Drug data : list) {
+					location.add(String.join(",",stockRepository.findLocationByDrugId(data.getDrugId())));  
+				}
+						
 				return DrugDTO.builder().brandName(e.getBrandName()).company(e.getCompany())
-						.avlQntyInTrimmed(e.getAvlQntyInTrimmed()).avlQntyInWhole(e.getAvlQntyInWhole())
-						.composition(e.getComposition()).drugForm(e.getDrugForm()).location(e.getLocation())
+						.composition(e.getComposition()).drugForm(e.getDrugForm()).location(String.join(",",location))
 						.mrp(e.getMrp()).unitPrice(e.getUnitPrice()).packing(e.getPacking())
 						.expiryDate(e.getExpiryDate()).build();
 			}

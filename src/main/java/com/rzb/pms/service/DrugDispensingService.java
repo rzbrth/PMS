@@ -1,5 +1,8 @@
 package com.rzb.pms.service;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
@@ -12,14 +15,15 @@ import org.springframework.stereotype.Service;
 import com.rzb.pms.dto.DrugType;
 import com.rzb.pms.exception.CustomException;
 import com.rzb.pms.log.Log;
-import com.rzb.pms.model.DrugDispense;
 import com.rzb.pms.model.Customer;
 import com.rzb.pms.model.Drug;
+import com.rzb.pms.model.DrugDispense;
 import com.rzb.pms.model.SellAudit;
+import com.rzb.pms.model.Stock;
 import com.rzb.pms.repository.DrugDispenseRepository;
-import com.rzb.pms.repository.CustomerRepository;
 import com.rzb.pms.repository.DrugRepository;
 import com.rzb.pms.repository.SellAuditRepository;
+import com.rzb.pms.repository.StockRepository;
 import com.rzb.pms.utils.BaseUtil;
 
 @Service
@@ -38,7 +42,7 @@ public class DrugDispensingService {
 	private SellAuditRepository auditRepository;
 
 	@Autowired
-	private CustomerRepository customerRepository;
+	private StockRepository stockRepository;
 
 	@PersistenceContext
 	private EntityManager em;
@@ -52,37 +56,45 @@ public class DrugDispensingService {
 			throw new CustomException("No line item Added", HttpStatus.BAD_REQUEST);
 		}
 		try {
-			Double reqQntyInTrimmed = null;
-			Double avlQntyInTrimmed = null;
-			Double avlQntyInWhole = null;
-			Double reqQntyInWhole = null;
-
+			Double reqQntyInTrimmed = null, avlQntyInTrimmed = null, avlQntyInWhole = null, reqQntyInWhole = null;
+			String location = null;
+			Integer stockId = null;
 			Drug drugData = repository.findById(item.getDrugId()).get();
-
+			List<Stock> sdata = new ArrayList<Stock>();
 			if (item.getDrugUnit().equalsIgnoreCase(DrugType.TRIMMED.toString())) {
-				reqQntyInTrimmed = item.getItemSellQuantity();
-				avlQntyInTrimmed = drugData.getAvlQntyInTrimmed() - reqQntyInTrimmed;
-				reqQntyInWhole = drugData.getAvlQntyInWhole() - (reqQntyInTrimmed / drugData.getPacking());
-				if (reqQntyInTrimmed % drugData.getPacking() == 0) {
+				sdata = stockRepository.findStockWithTrimmedQnty(drugData.getDrugId(), item.getItemSellQuantity());
+			} else if (item.getDrugUnit().equalsIgnoreCase(DrugType.STRIP.toString())) {
+				sdata = stockRepository.findStockWithWholeQnty(drugData.getDrugId(), item.getItemSellQuantity());
+			}
+			for (Stock stock : sdata) {
+				location = stock.getLocation();
+				stockId = stock.getStockId();
+				if (item.getDrugUnit().equalsIgnoreCase(DrugType.TRIMMED.toString())) {
+					reqQntyInTrimmed = item.getItemSellQuantity();
+					avlQntyInTrimmed = stock.getAvlQntyTrimmed() - reqQntyInTrimmed;
+					reqQntyInWhole = stock.getAvlQntyWhole() - (reqQntyInTrimmed / drugData.getPacking());
+					if (reqQntyInTrimmed % stock.getPacking() == 0) {
 
-					avlQntyInWhole = drugData.getAvlQntyInWhole() - (reqQntyInTrimmed / drugData.getPacking());
+						avlQntyInWhole = stock.getAvlQntyWhole() - (reqQntyInTrimmed / stock.getPacking());
+
+					} else {
+
+						avlQntyInWhole = avlQntyInTrimmed / stock.getPacking();
+					}
 
 				} else {
 
-					avlQntyInWhole = avlQntyInTrimmed / drugData.getPacking();
+					reqQntyInWhole = item.getItemSellQuantity();
+					reqQntyInTrimmed = reqQntyInWhole * stock.getPacking();
+					avlQntyInWhole = stock.getAvlQntyWhole() - reqQntyInWhole;
+					avlQntyInTrimmed = avlQntyInWhole * stock.getPacking();
 				}
-
-			} else {
-
-				reqQntyInWhole = item.getItemSellQuantity();
-				reqQntyInTrimmed = reqQntyInWhole * drugData.getPacking();
-				avlQntyInWhole = drugData.getAvlQntyInWhole() - reqQntyInWhole;
-				avlQntyInTrimmed = avlQntyInWhole * drugData.getPacking();
 			}
 			float itemSellPrice = BaseUtil.calculatePriceAfterDiscount(item.getMrp(), item.getDiscount());
-			em.createNativeQuery("UPDATE drug SET avl_qnty_in_trimmed=?, avl_qnty_in_whole=? WHERE drug_id=?")
+			em.createNativeQuery(
+					"UPDATE stock SET avl_qnty_trimmed=?, avl_qnty_whole=? WHERE stock_id =? and drug_id=?")
 					.setParameter(1, avlQntyInTrimmed).setParameter(2, avlQntyInWhole)
-					.setParameter(3, drugData.getDrugId()).executeUpdate();
+					.setParameter(3, drugData.getDrugId()).setParameter(4, stockId).executeUpdate();
 			Customer customer = Customer.builder().mobileNumber(item.getMobileNumber()).name(item.getCustomerName())
 					.build();
 			// customerRepository.save(customer);
@@ -90,12 +102,11 @@ public class DrugDispensingService {
 			// The ID is only guaranteed to be generated at flush time.
 			// Persisting an entity only makes it "attached" to the persistence context.
 			em.flush();
-
 			auditRepository.save(SellAudit.builder().brandName(drugData.getBrandName())
 					.composition(drugData.getComposition()).discount(item.getDiscount()).drugId(item.getDrugId())
 					.genericName(drugData.getGenericName()).itemSellPrice(itemSellPrice)
 					.itemSellQuantity(item.getItemSellQuantity()).reqQntyInWhole(reqQntyInWhole)
-					.reqQntyInTrimmed(reqQntyInTrimmed).location(drugData.getLocation()).mrp(drugData.getMrp())
+					.reqQntyInTrimmed(reqQntyInTrimmed).location(location).mrp(drugData.getMrp())
 					.packing(drugData.getPacking()).paymentMode(item.getPaymentMode()).sellBy(item.getSellBy())
 					.sellDate(item.getSellDate()).expiryDate(drugData.getExpiryDate()).drugForm(drugData.getDrugForm())
 					.mobileNumber(item.getMobileNumber()).customerId(customer.getCustomerId()).build());

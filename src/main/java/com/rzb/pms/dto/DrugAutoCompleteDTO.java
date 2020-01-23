@@ -3,7 +3,6 @@ package com.rzb.pms.dto;
 import java.util.Date;
 
 import com.rzb.pms.model.Drug;
-import com.rzb.pms.utils.BeanUtil;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -55,23 +54,21 @@ public class DrugAutoCompleteDTO {
 		this.mrp = x.getMrp();
 		this.unitPrice = x.getUnitPrice();
 		this.genericId = x.getGenericId();
-		this.location = x.getLocation();
+		//this.location = x.getLocation();
 		this.expiryDate = x.getExpiryDate();
-		this.avlQntyInTrimmed = x.getAvlQntyInTrimmed();
-		this.avlQntyInWhole = x.getAvlQntyInWhole();
 		this.drugForm = x.getDrugForm();
-		if (avlQntyInWhole != null) {
-			if (x.getAvlQntyInWhole() % 1 != 0) {
-				this.wholeAvlQntyInWords = findQntyInWord(avlQntyInWhole, drugForm);
-
-			} else {
-				this.wholeAvlQntyInWords = BeanUtil.stripTrailingZero(String.valueOf(avlQntyInWhole)) + " "
-						+ DrugType.STRIP.toString() + " " + "of" + " " + drugForm;
-			}
-		} else {
-			this.wholeAvlQntyInWords = "Stock not available for this drug";
-		}
-
+//		if (avlQntyInWhole != null) {
+//			if (x.getAvlQntyInWhole() % 1 != 0) {
+//				this.wholeAvlQntyInWords = findQntyInWord(avlQntyInWhole, drugForm);
+//
+//			} else {
+//				this.wholeAvlQntyInWords = BaseUtil.stripTrailingZero(String.valueOf(avlQntyInWhole)) + " "
+//						+ DrugType.STRIP.toString() + " " + "of" + " " + drugForm;
+//			}
+//		} else {
+//			this.wholeAvlQntyInWords = "Stock not available for this drug";
+//		}
+//
 	}
 
 	private String findQntyInWord(Double avlQntyInWhole, String drugForm) {

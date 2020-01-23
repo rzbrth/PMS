@@ -27,10 +27,6 @@ public class Stock {
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private Integer stockId;
 
-//	@OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-//	@JoinColumn(name = "drugId", nullable = false)
-//	private Drug drugs;
-
 	private String drugId;
 
 	private Date stockCreatedAt;
@@ -38,7 +34,7 @@ public class Stock {
 	private Date stockUpdatedAt;
 
 	private String createddBy;
-	
+
 	private String updatedBy;
 
 	private Integer packing;
@@ -57,14 +53,10 @@ public class Stock {
 
 	private Double avlQntyTrimmed;
 
-//	@OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-//	@JoinColumn(name = "distributerId", nullable = false)
-//	private Distributer distributer;
-
 	private Integer distributerId;
 
 	private String stockType;
-	
+
 	private String invoiceReference;
 
 	private Integer poId;

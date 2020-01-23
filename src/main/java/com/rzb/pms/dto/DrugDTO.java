@@ -15,7 +15,6 @@ import lombok.Data;
 @Builder
 public class DrugDTO {
 
-	//@NotNull(message = "Id can't be null")
 	private String drugId;
 
 	private String genericName;
@@ -38,10 +37,6 @@ public class DrugDTO {
 
 	private Date expiryDate;
 
-	private Double avlQntyInWhole;// whole medecine
-
-	private Double avlQntyInTrimmed;// medecine after cutting
-
 	private String drugForm;
 
 	public DrugDTO() {
@@ -57,10 +52,7 @@ public class DrugDTO {
 		this.mrp = data.getMrp();
 		this.unitPrice = data.getUnitPrice();
 		this.genericId = data.getGenericId();
-		this.location = data.getLocation();
 		this.expiryDate = data.getExpiryDate();
-		this.avlQntyInWhole = data.getAvlQntyInWhole();
-		this.avlQntyInTrimmed = data.getAvlQntyInTrimmed();
 	}
 
 }

@@ -31,10 +31,13 @@ public class PoDrugDTO {
 
 	private Integer distributerId;
 	
-	// below two properties only to be used while creating stock from po directly
+	// below  properties only to be used while creating stock from po directly
 	private Date expireDate;
 	
 	private String location;
+	
+	private String invoiceReference;
+
 	
 	public PoDrugDTO(PoDrug data) {
 		this.distributerId = data.getDistributerId();

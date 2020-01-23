@@ -11,6 +11,7 @@ import com.rzb.pms.dto.OrderStatus;
 import com.rzb.pms.dto.PoDrugDTO;
 import com.rzb.pms.dto.PurchaseOrderDTO;
 import com.rzb.pms.dto.PurchaseOrderResponse;
+import com.rzb.pms.dto.ReferenceType;
 import com.rzb.pms.dto.StockDirectRequestDTO;
 import com.rzb.pms.dto.StockType;
 import com.rzb.pms.exception.CustomException;
@@ -19,6 +20,7 @@ import com.rzb.pms.model.Drug;
 import com.rzb.pms.model.Stock;
 import com.rzb.pms.repository.DrugRepository;
 import com.rzb.pms.repository.StockRepository;
+import com.rzb.pms.utils.BaseUtil;
 
 @Service
 public class StockService {
@@ -45,6 +47,7 @@ public class StockService {
 					.expiryDate(stock.getExpiryDate()).genericId(stock.getGenericId()).location(stock.getLocation())
 					.mrp(stock.getMrp()).packing(stock.getPacking()).stockCreatedAt(new Date())
 					.unitPrice(stock.getMrp() / stock.getPacking()).drugId(stock.getDrugId())
+					.invoiceReference(BaseUtil.getRandomPoReference(ReferenceType.DIRECT_STOCK.toString()))
 					.stockType(StockType.DIRECT.toString()).distributerId(stock.getDistributerId()).build());
 
 			return "Stock created Successfully";
@@ -76,6 +79,7 @@ public class StockService {
 								.mrp(stock.getDrugPrice()).packing(drugData.getPacking()).stockCreatedAt(new Date())
 								.unitPrice(stock.getDrugPrice() / drugData.getPacking()).drugId(stock.getDrugId())
 								.stockType(StockType.FROM_PO.toString()).distributerId(stock.getDistributerId())
+								.invoiceReference(stock.getInvoiceReference())
 								.poId(data.getPoId()).build());
 
 					}

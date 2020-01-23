@@ -1,5 +1,6 @@
 package com.rzb.pms.service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -14,11 +15,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import com.querydsl.core.BooleanBuilder;
+import com.rzb.pms.dto.DrugAboutToExpireStatus;
 import com.rzb.pms.dto.DrugAutoCompleteDTO;
 import com.rzb.pms.dto.DrugDTO;
 import com.rzb.pms.dto.DrugDtoReqRes;
@@ -28,7 +31,10 @@ import com.rzb.pms.exception.CustomException;
 import com.rzb.pms.log.Log;
 import com.rzb.pms.model.Drug;
 import com.rzb.pms.model.QDrug;
+import com.rzb.pms.model.Stock;
+import com.rzb.pms.repository.DistributerRepository;
 import com.rzb.pms.repository.DrugRepository;
+import com.rzb.pms.repository.StockRepository;
 import com.rzb.pms.rsql.SearchCriteria;
 import com.rzb.pms.rsql.jpa.GenericSpecification;
 import com.rzb.pms.utils.BaseUtil;
@@ -49,6 +55,14 @@ public class DrugService {
 
 	@PersistenceContext
 	private EntityManager em;
+
+	@Autowired
+	private StockRepository stockRepository;
+
+	@Autowired
+	private static DistributerRepository repository;
+
+	private BooleanBuilder builder = new BooleanBuilder();
 
 	/**
 	 * Return all drugs
@@ -84,12 +98,12 @@ public class DrugService {
 			throw new CustomEntityNotFoundException(Drug.class, "id", id);
 		}
 		Drug data = drugData.get();
-
 		return DrugDTO.builder().brandName(data.getBrandName()).company(data.getCompany())
 				.composition(data.getComposition()).drugId(data.getDrugId()).genericId(data.getGenericId())
 				.genericName(data.getGenericName()).mrp(data.getMrp()).packing(data.getPacking())
-				.unitPrice(data.getUnitPrice()).location(data.getLocation()).avlQntyInWhole(data.getAvlQntyInWhole())
-				.avlQntyInTrimmed(data.getAvlQntyInTrimmed()).drugForm(data.getDrugForm()).build();
+				.unitPrice(data.getUnitPrice())
+				.location(String.join(",", stockRepository.findLocationByDrugId(data.getDrugId())))
+				.drugForm(data.getDrugForm()).build();
 	}
 
 	/**
@@ -135,18 +149,15 @@ public class DrugService {
 			throw new CustomException("Drug information can't be empty", HttpStatus.NOT_ACCEPTABLE);
 		}
 		try {
-			em.createNativeQuery(
-					"INSERT INTO drug (drug_id, avl_qnty_in_trimmed, avl_qnty_in_whole, brand_name, company, composition,"
-							+ " drug_form, expiry_date, generic_id, generic_name,location, mrp, packing, unit_price)"
-							+ " VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
+			em.createNativeQuery("INSERT INTO drug (drug_id, brand_name, company, composition,"
+					+ " drug_form, expiry_date, generic_id, generic_name, mrp, packing, unit_price)"
+					+ " VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
 					.setParameter(1, "TD" + em.createNativeQuery("select nextval ('drug_id_seq')").getSingleResult())
-					.setParameter(2, data.getAvlQntyInWhole() * data.getPacking())
-					.setParameter(3, data.getAvlQntyInWhole()).setParameter(4, data.getBrandName())
-					.setParameter(5, data.getCompany()).setParameter(6, data.getComposition())
-					.setParameter(7, data.getDrugForm()).setParameter(8, data.getExpiryDate())
-					.setParameter(9, data.getGenericId()).setParameter(10, data.getGenericName())
-					.setParameter(11, data.getLocation()).setParameter(12, data.getMrp())
-					.setParameter(13, data.getPacking()).setParameter(14, data.getMrp() / data.getPacking())
+					.setParameter(2, data.getBrandName()).setParameter(3, data.getCompany())
+					.setParameter(4, data.getComposition()).setParameter(5, data.getDrugForm())
+					.setParameter(6, data.getExpiryDate()).setParameter(7, data.getGenericId())
+					.setParameter(8, data.getGenericName()).setParameter(9, data.getMrp())
+					.setParameter(10, data.getPacking()).setParameter(11, data.getMrp() / data.getPacking())
 					.executeUpdate();
 
 			return "Drug info saved successfully";
@@ -169,7 +180,6 @@ public class DrugService {
 			throw new CustomException("Generic Id can't be null", HttpStatus.BAD_REQUEST);
 		}
 		final QDrug drugs = QDrug.drug;
-		BooleanBuilder builder = new BooleanBuilder();
 		builder.and(drugs.genericId.eq(genericId));
 		Page<Drug> data = drugRepository.findAll(builder.getValue(), page);
 		if (data == null) {
@@ -194,7 +204,6 @@ public class DrugService {
 		}
 
 		final QDrug drugs = QDrug.drug;
-		BooleanBuilder builder = new BooleanBuilder();
 		builder.and(drugs.genericName.eq(name));
 		Page<Drug> data = drugRepository.findAll(builder.getValue(), page);
 		if (data == null) {
@@ -219,7 +228,6 @@ public class DrugService {
 		}
 
 		final QDrug drugs = QDrug.drug;
-		BooleanBuilder builder = new BooleanBuilder();
 		builder.and(drugs.composition.contains(composition));
 		Page<Drug> data = drugRepository.findAll(builder.getValue(), page);
 		if (data == null) {
@@ -254,9 +262,8 @@ public class DrugService {
 			drugRepository.save(Drug.builder().brandName(drugData.getBrandName()).company(drugData.getCompany())
 					.composition(drugData.getComposition()).drugForm(drugData.getDrugForm())
 					.expiryDate(drugData.getExpiryDate()).genericId(drugData.getGenericId())
-					.genericName(drugData.getGenericName()).location(drugData.getLocation()).mrp(drugData.getMrp())
-					.avlQntyInTrimmed(drugData.getAvlQntyInTrimmed()).avlQntyInWhole(drugData.getAvlQntyInWhole())
-					.packing(drugData.getPacking()).build());
+					.genericName(drugData.getGenericName()).mrp(drugData.getMrp()).packing(drugData.getPacking())
+					.build());
 
 			return "Drug info updated successfully";
 		} catch (Exception e) {
@@ -264,6 +271,17 @@ public class DrugService {
 			throw new CustomException("Drug information can't be empty", e.getCause());
 		}
 
+	}
+
+	public List<DrugAboutToExpireStatus> checkForExpiry(String sort) {
+
+		List<DrugAboutToExpireStatus> result = new ArrayList<DrugAboutToExpireStatus>();
+		for (Stock stock : stockRepository.findAll(Sort.by(Sort.Direction.DESC, "expiry_date"))) {
+			result.add(DrugAboutToExpireStatus.buildWithStockInfo(stock,
+					drugRepository.findById(stock.getDrugId()).get().getBrandName(),
+					repository.findById(stock.getDistributerId()).get().getName()));
+		}
+		return result;
 	}
 
 }

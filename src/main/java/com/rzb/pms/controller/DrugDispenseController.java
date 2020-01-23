@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.rzb.pms.config.ResponseSchema;
 import com.rzb.pms.dto.AddToCartWrapper;
+import com.rzb.pms.exception.CustomException;
 import com.rzb.pms.log.Log;
 import com.rzb.pms.model.DrugDispense;
 import com.rzb.pms.service.DrugDispensingService;
@@ -28,19 +29,15 @@ public class DrugDispenseController {
 
 	@Autowired
 	private DrugDispensingService cartService;
-
-//	@PostMapping(Endpoints.ADD_TO_CART)
-//	public ResponseEntity<ResponseSchema<String>> addLineItemToCart(@RequestBody List<AddToCart> cart){
-//		
-//		
-//		return new ResponseEntity<>(ResponseUtil.buildSuccessResponse(cartService.addToCart(cart), new ResponseSchema<String>()),
-//				HttpStatus.OK);
-//	}
 	
 	@PostMapping(Endpoints.ADD_TO_CART)
 	@ApiOperation("Dispense drug")
 	public ResponseEntity<ResponseSchema<String>> addLineItemDispenseList(@RequestBody AddToCartWrapper wrpper) {
 
+		if(wrpper == null) {
+			logger.error("Line Items can't be empty", HttpStatus.BAD_REQUEST);
+			throw new CustomException("Line Items can't be empty", HttpStatus.BAD_REQUEST);
+		}
 		for (DrugDispense lineitem : wrpper.getCart()) {
 			cartService.drugDispense(lineitem);
 		}
