@@ -1,7 +1,6 @@
 package com.rzb.pms.service;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Date;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -12,7 +11,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import com.rzb.pms.dto.AddToCartWrapper;
+import com.rzb.pms.dto.DrugDispenseDTO;
 import com.rzb.pms.dto.DrugType;
+import com.rzb.pms.dto.OtherInfoDTO;
 import com.rzb.pms.exception.CustomException;
 import com.rzb.pms.log.Log;
 import com.rzb.pms.model.Customer;
@@ -20,6 +22,7 @@ import com.rzb.pms.model.Drug;
 import com.rzb.pms.model.DrugDispense;
 import com.rzb.pms.model.SellAudit;
 import com.rzb.pms.model.Stock;
+import com.rzb.pms.repository.CustomerRepository;
 import com.rzb.pms.repository.DrugDispenseRepository;
 import com.rzb.pms.repository.DrugRepository;
 import com.rzb.pms.repository.SellAuditRepository;
@@ -44,29 +47,50 @@ public class DrugDispensingService {
 	@Autowired
 	private StockRepository stockRepository;
 
+	@Autowired
+	private CustomerRepository customerRepository;
+
 	@PersistenceContext
 	private EntityManager em;
 
+	@Autowired
+	private DocumentService documentService;
+
+	private static final String PRINT = "PRINT";
+	private static final String EMAIL = "EMAIL";
+
 	@Transactional
-	public String drugDispense(DrugDispense item) {
+	public String drugDispense(AddToCartWrapper wrapper) {
 
-		if (item == null) {
-
-			logger.error("No line item Added");
-			throw new CustomException("No line item Added", HttpStatus.BAD_REQUEST);
-		}
 		try {
-			Double reqQntyInTrimmed = null, avlQntyInTrimmed = null, avlQntyInWhole = null, reqQntyInWhole = null;
-			String location = null;
-			Integer stockId = null;
-			Drug drugData = repository.findById(item.getDrugId()).get();
-			List<Stock> sdata = new ArrayList<Stock>();
-			if (item.getDrugUnit().equalsIgnoreCase(DrugType.TRIMMED.toString())) {
-				sdata = stockRepository.findStockWithTrimmedQnty(drugData.getDrugId(), item.getItemSellQuantity());
-			} else if (item.getDrugUnit().equalsIgnoreCase(DrugType.STRIP.toString())) {
-				sdata = stockRepository.findStockWithWholeQnty(drugData.getDrugId(), item.getItemSellQuantity());
-			}
-			for (Stock stock : sdata) {
+
+			OtherInfoDTO restData = wrapper.getInfo();
+
+			for (DrugDispenseDTO item : wrapper.getItem()) {
+
+				if (item == null) {
+
+					logger.error("No drug selected for dispense");
+					throw new CustomException("No drug selected for dispense", HttpStatus.BAD_REQUEST);
+				}
+				Double reqQntyInTrimmed = null, avlQntyInTrimmed = null, avlQntyInWhole = null, reqQntyInWhole = null;
+				String location = null;
+				Integer stockId = null;
+				float itemSellPriceBeforeDiscount = 0, itemSellPriceAfterDiscount = 0;
+				Drug drugData = repository.findById(item.getDrugId()).get();
+				Stock stock = null;
+				if (item.getDrugUnit().equalsIgnoreCase(DrugType.TRIMMED.toString())) {
+					stock = stockRepository.findStockWithTrimmedQnty(item.getDrugId(), item.getItemSellQuantity());
+				} else if (item.getDrugUnit().equalsIgnoreCase(DrugType.STRIP.toString())) {
+					stock = stockRepository.findStockWithWholeQnty(item.getDrugId(), item.getItemSellQuantity());
+				}
+				if (stock == null) {
+					logger.error("Stock is empty for : " + drugData.getBrandName());
+					throw new CustomException("Stock is empty for : " + drugData.getBrandName(),
+							HttpStatus.BAD_REQUEST);
+
+				}
+
 				location = stock.getLocation();
 				stockId = stock.getStockId();
 				if (item.getDrugUnit().equalsIgnoreCase(DrugType.TRIMMED.toString())) {
@@ -75,56 +99,101 @@ public class DrugDispensingService {
 					reqQntyInWhole = stock.getAvlQntyWhole() - (reqQntyInTrimmed / drugData.getPacking());
 					if (reqQntyInTrimmed % stock.getPacking() == 0) {
 
-						avlQntyInWhole = stock.getAvlQntyWhole() - (reqQntyInTrimmed / stock.getPacking());
-
+						avlQntyInWhole = stock.getAvlQntyWhole() - reqQntyInWhole;
 					} else {
 
 						avlQntyInWhole = avlQntyInTrimmed / stock.getPacking();
 					}
 
-				} else {
+					itemSellPriceBeforeDiscount = (float) ((stock.getMrp() / stock.getPacking())
+							* item.getItemSellQuantity());
+					if (item.getIsDiscountApplicable()) {
+
+						itemSellPriceAfterDiscount = BaseUtil.calculatePriceAfterDiscount(stock.getMrp(),
+								restData.getDiscount(), itemSellPriceBeforeDiscount);
+					}
+
+				} else if (item.getDrugUnit().equalsIgnoreCase(DrugType.STRIP.toString())) {
 
 					reqQntyInWhole = item.getItemSellQuantity();
 					reqQntyInTrimmed = reqQntyInWhole * stock.getPacking();
 					avlQntyInWhole = stock.getAvlQntyWhole() - reqQntyInWhole;
 					avlQntyInTrimmed = avlQntyInWhole * stock.getPacking();
+
+					itemSellPriceBeforeDiscount = (float) (item.getItemSellQuantity() * stock.getMrp());
+					if (item.getIsDiscountApplicable()) {
+
+						itemSellPriceAfterDiscount = BaseUtil.calculatePriceAfterDiscount(stock.getMrp(),
+								restData.getDiscount(), itemSellPriceBeforeDiscount);
+					}
+
 				}
+				// Updating drug stock
+				em.createNativeQuery(
+						"UPDATE stock SET avl_qnty_trimmed=?, avl_qnty_whole=? WHERE stock_id =? and drug_id=?")
+						.setParameter(1, avlQntyInTrimmed).setParameter(2, avlQntyInWhole).setParameter(3, stockId)
+						.setParameter(4, drugData.getDrugId()).executeUpdate();
+
+				Customer data = customerRepository.findByMobileNumber(restData.getCustomerMobileNumber());
+
+				// Create new customer if not present and save audit detail
+				if (data == null) {
+					Customer customer = Customer.builder().mobileNumber(restData.getCustomerMobileNumber())
+							.name(restData.getCustomerName()).build();
+					em.persist(customer);
+					// The ID is only guaranteed to be generated at flush time.
+					// Persisting an entity only makes it "attached" to the persistence context.
+					em.flush();
+
+					auditRepository.save(SellAudit.builder().brandName(drugData.getBrandName())
+							.composition(drugData.getComposition()).discount(restData.getDiscount())
+							.drugId(item.getDrugId()).genericName(drugData.getGenericName())
+							.itemSellPrice(itemSellPriceAfterDiscount).itemSellQuantity(item.getItemSellQuantity())
+							.reqQntyInWhole(reqQntyInWhole).reqQntyInTrimmed(reqQntyInTrimmed).location(location)
+							.mrp(drugData.getMrp()).packing(drugData.getPacking())
+							.paymentMode(restData.getPaymentMode()).sellBy("").sellDate(new Date())
+							.expiryDate(drugData.getExpiryDate()).drugForm(drugData.getDrugForm())
+							.customerMobileNumber(restData.getCustomerMobileNumber())
+							.customerId(customer.getCustomerId()).build());
+				} else {
+					auditRepository.save(SellAudit.builder().brandName(drugData.getBrandName())
+							.composition(drugData.getComposition()).discount(restData.getDiscount())
+							.drugId(item.getDrugId()).genericName(drugData.getGenericName())
+							.itemSellPrice(itemSellPriceAfterDiscount).itemSellQuantity(item.getItemSellQuantity())
+							.reqQntyInWhole(reqQntyInWhole).reqQntyInTrimmed(reqQntyInTrimmed).location(location)
+							.mrp(drugData.getMrp()).packing(drugData.getPacking())
+							.paymentMode(restData.getPaymentMode()).sellBy("").sellDate(new Date())
+							.expiryDate(drugData.getExpiryDate()).drugForm(drugData.getDrugForm())
+							.customerMobileNumber(restData.getCustomerMobileNumber()).customerId(data.getCustomerId())
+							.build());
+				}
+
+				dispenseRepository.saveAndFlush(
+						DrugDispense.builder().brandName(drugData.getBrandName()).composition(drugData.getComposition())
+								.customerName(restData.getCustomerName()).discount(restData.getDiscount())
+								.drugForm(drugData.getDrugForm()).drugId(item.getDrugId()).drugUnit(item.getDrugUnit())
+								.expiryDate(stock.getExpiryDate()).genericName(drugData.getGenericName())
+								.itemSellPrice(itemSellPriceAfterDiscount).itemSellQuantity(item.getItemSellQuantity())
+								.location(stock.getLocation()).mobileNumber(restData.getCustomerMobileNumber())
+								.mrp(stock.getMrp()).packing(stock.getPacking()).paymentMode(restData.getPaymentMode())
+								.sellBy("").unitPrice(stock.getMrp() / stock.getPacking()).build());
+
 			}
-			float itemSellPrice = BaseUtil.calculatePriceAfterDiscount(item.getMrp(), item.getDiscount());
-			em.createNativeQuery(
-					"UPDATE stock SET avl_qnty_trimmed=?, avl_qnty_whole=? WHERE stock_id =? and drug_id=?")
-					.setParameter(1, avlQntyInTrimmed).setParameter(2, avlQntyInWhole)
-					.setParameter(3, drugData.getDrugId()).setParameter(4, stockId).executeUpdate();
-			Customer customer = Customer.builder().mobileNumber(item.getMobileNumber()).name(item.getCustomerName())
-					.build();
-			// customerRepository.save(customer);
-			em.persist(customer);
-			// The ID is only guaranteed to be generated at flush time.
-			// Persisting an entity only makes it "attached" to the persistence context.
-			em.flush();
-			auditRepository.save(SellAudit.builder().brandName(drugData.getBrandName())
-					.composition(drugData.getComposition()).discount(item.getDiscount()).drugId(item.getDrugId())
-					.genericName(drugData.getGenericName()).itemSellPrice(itemSellPrice)
-					.itemSellQuantity(item.getItemSellQuantity()).reqQntyInWhole(reqQntyInWhole)
-					.reqQntyInTrimmed(reqQntyInTrimmed).location(location).mrp(drugData.getMrp())
-					.packing(drugData.getPacking()).paymentMode(item.getPaymentMode()).sellBy(item.getSellBy())
-					.sellDate(item.getSellDate()).expiryDate(drugData.getExpiryDate()).drugForm(drugData.getDrugForm())
-					.mobileNumber(item.getMobileNumber()).customerId(customer.getCustomerId()).build());
 
-			dispenseRepository.save(item);
+			if (restData.getIsInvoiceRequired()) {
 
-			return "Item added to cart Sucessfully";
+				if (restData.getInvoiceType().equalsIgnoreCase(PRINT)) {
+					documentService.printInvoice();
+				} else if (restData.getInvoiceType().equalsIgnoreCase(EMAIL)) {
+					documentService.mailInvoice();
+				}
 
+			}
 		} catch (Exception e) {
-			logger.error("problem occured while adding item to cart", e);
-			throw new CustomException("problem occured while adding item to cart", e);
+			logger.error("problem occured while dispensing item", e);
+			throw new CustomException("problem occured while dispensing item", e);
 		}
-
-	}
-
-	public String getCartContent() {
-
-		return null;
+		return "Item dispensed Sucessfully";
 
 	}
 

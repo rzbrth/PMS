@@ -1,6 +1,11 @@
 package com.rzb.pms.exception;
 
+import java.io.IOException;
+
+import javax.servlet.http.HttpServletResponse;
+
 import org.hibernate.exception.ConstraintViolationException;
+import org.slf4j.Logger;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -20,12 +25,21 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 import org.springframework.web.servlet.NoHandlerFoundException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
-import lombok.extern.slf4j.Slf4j;
+import com.rzb.pms.exception.apierror.ApiError;
+import com.rzb.pms.log.Log;
 
 @Order(Ordered.HIGHEST_PRECEDENCE)
 @ControllerAdvice
-@Slf4j
 public class RestExceptionHandler extends ResponseEntityExceptionHandler {
+
+	@Log
+	private Logger log;
+
+	// Let Spring BasicErrorController handle the exception, we just override the status code to 400
+	@ExceptionHandler(CustomEntityNotFoundException.class)
+	public void springHandleNotFound(HttpServletResponse response) throws IOException {
+		response.sendError(HttpStatus.NOT_FOUND.value());
+	}
 
 	/**
 	 * Handle MissingServletRequestParameterException. Triggered when a 'required'
@@ -80,13 +94,14 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 	}
 
 	/**
-	 * Handles CustomEntityNotFoundException. Created to encapsulate errors with more
-	 * detail than javax.persistence.EntityNotFoundException.
+	 * Handles CustomEntityNotFoundException. Created to encapsulate errors with
+	 * more detail than javax.persistence.EntityNotFoundException.
+	 * 
 	 * @param ex the CustomEntityNotFoundException
 	 * @return the ApiError object
 	 */
-	@ExceptionHandler(CustomEntityNotFoundException.class)
-	protected ResponseEntity<Object> handleEntityNotFound(CustomEntityNotFoundException ex) {
+	@ExceptionHandler(CustomException.class)
+	protected ResponseEntity<Object> handleEntityNotFound(CustomException ex) {
 		ApiError apiError = new ApiError(HttpStatus.NOT_FOUND);
 		apiError.setMessage(ex.getMessage());
 		return buildResponseEntity(apiError);
@@ -95,6 +110,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 	/**
 	 * Handle HttpMessageNotReadableException. Happens when request JSON is
 	 * malformed.
+	 * 
 	 * @param ex the HttpMessageNotReadableException
 	 * @return the ApiError object
 	 */
@@ -109,8 +125,9 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 
 	/**
 	 * Handle HttpMessageNotWritableException.
+	 * 
 	 * @param ex the HttpMessageNotWritableException
-	 * @return the ApiError object 
+	 * @return the ApiError object
 	 */
 	@Override
 	protected ResponseEntity<Object> handleHttpMessageNotWritable(HttpMessageNotWritableException ex,
@@ -121,6 +138,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 
 	/**
 	 * Handle NoHandlerFoundException.
+	 * 
 	 * @param ex the NoHandlerFoundException
 	 * @return the ApiError object
 	 */
@@ -136,6 +154,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 
 	/**
 	 * Handle javax.persistence.EntityNotFoundException
+	 * 
 	 * @param ex the EntityNotFoundException
 	 * @return the ApiError object
 	 */

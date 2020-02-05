@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,6 +22,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.rzb.pms.config.ResponseSchema;
 import com.rzb.pms.dto.DrugDTO;
 import com.rzb.pms.dto.DrugDtoReqRes;
+import com.rzb.pms.exception.CustomEntityNotFoundException;
+import com.rzb.pms.exception.CustomException;
 import com.rzb.pms.log.Log;
 import com.rzb.pms.service.DrugService;
 import com.rzb.pms.utils.Endpoints;
@@ -43,7 +46,7 @@ public class DrugController {
 	@ApiOperation("Get all drug data")
 	public ResponseEntity<ResponseSchema<List<DrugDTO>>> getAllDrugs(
 			@ApiParam(value = "Page Number, Page Size", required = true) @RequestParam(defaultValue = "0") Integer page,
-			@RequestParam(defaultValue = "10") Integer size) {
+			@RequestParam(defaultValue = "10") Integer size) throws CustomException {
 		PageRequest pageRequest = PageRequest.of(page, size);
 		List<DrugDTO> data = drugService.findAllDrugs(pageRequest);
 
@@ -54,7 +57,7 @@ public class DrugController {
 	@GetMapping(Endpoints.SEARCH_MEDECINE_BY_ID)
 	@ApiOperation("Find drug by drug id")
 	public ResponseEntity<ResponseSchema<DrugDTO>> getDrugById(
-			@ApiParam(value = "Drug Id", required = true) @Valid @PathVariable String drugId) {
+			@ApiParam(value = "Drug Id", required = true) @Valid @PathVariable String drugId) throws CustomEntityNotFoundException {
 
 		return new ResponseEntity<>(
 				ResponseUtil.buildSuccessResponse(drugService.getdrugById(drugId), new ResponseSchema<DrugDTO>()),
@@ -87,7 +90,8 @@ public class DrugController {
 	@ApiOperation("Find drug info by using generic id")
 	public ResponseEntity<ResponseSchema<List<DrugDTO>>> getDrugByGenericId(
 			@ApiParam(value = "Generic Id", required = true) @Valid @PathVariable String genericId,
-			@RequestParam(defaultValue = "0") Integer page, @RequestParam(defaultValue = "10") Integer size) {
+			@RequestParam(defaultValue = "0") Integer page, @RequestParam(defaultValue = "10") Integer size)
+			throws CustomEntityNotFoundException {
 		PageRequest pageRequest = PageRequest.of(page, size);
 
 		return new ResponseEntity<>(
@@ -102,7 +106,8 @@ public class DrugController {
 
 	public ResponseEntity<ResponseSchema<List<DrugDTO>>> getDrugByGenericName(
 			@ApiParam(value = "Generic Name", required = true) @Valid @PathVariable String genericName,
-			@RequestParam(defaultValue = "0") Integer page, @RequestParam(defaultValue = "10") Integer size) {
+			@RequestParam(defaultValue = "0") Integer page, @RequestParam(defaultValue = "10") Integer size)
+			throws CustomEntityNotFoundException {
 		PageRequest pageRequest = PageRequest.of(page, size);
 
 		return new ResponseEntity<>(
@@ -116,7 +121,8 @@ public class DrugController {
 	@ApiOperation("Find drug info by using drug composition")
 	public ResponseEntity<ResponseSchema<List<DrugDTO>>> getDrugByComposition(
 			@ApiParam(value = "Drug Composition, Page Number, Page Size", required = true) @Valid @PathVariable String composition,
-			@RequestParam(defaultValue = "0") Integer page, @RequestParam(defaultValue = "10") Integer size) {
+			@RequestParam(defaultValue = "0") Integer page, @RequestParam(defaultValue = "10") Integer size)
+			throws CustomEntityNotFoundException {
 		PageRequest pageRequest = PageRequest.of(page, size);
 
 		return new ResponseEntity<>(

@@ -94,8 +94,8 @@ public class DrugService {
 		Optional<Drug> drugData = drugRepository.findById(id);
 
 		if (!drugData.isPresent()) {
-			logger.error("No drug found for the given id");
-			throw new CustomEntityNotFoundException(Drug.class, "id", id);
+			logger.error("No drug found for the given id:" + id);
+			throw new CustomEntityNotFoundException(Drug.class, "drugId", id);
 		}
 		Drug data = drugData.get();
 		return DrugDTO.builder().brandName(data.getBrandName()).company(data.getCompany())
@@ -128,11 +128,20 @@ public class DrugService {
 			}
 		}
 		Page<Drug> drugs = drugRepository.findAll(spec, pageRequest);
+		if (drugs.isEmpty()) {
+			logger.error("No data available", HttpStatus.NOT_FOUND);
+			throw new CustomException("No data available", HttpStatus.NOT_FOUND);
+		}
 		logger.info("Total Drug Record as per Search Criteria" + drugs.getContent().size());
-		List<DrugAutoCompleteDTO> drugSearchList = drugs.getContent().stream().map(x -> new DrugAutoCompleteDTO(x))
-				.collect(Collectors.toList());
+		
+		CollectionMapper.mapDrugToDrugAutoCompleteDTO(drugs.getContent());
+		return null;
+		
+		
+//		List<DrugAutoCompleteDTO> drugSearchList = drugs.getContent().stream().map(x -> new DrugAutoCompleteDTO(x))
+//				.collect(Collectors.toList());
 
-		return new DrugSearchResponse(drugSearchList, drugs.getTotalElements());
+		//return new DrugSearchResponse(drugSearchList, drugs.getTotalElements());
 	}
 
 	/**
@@ -151,7 +160,7 @@ public class DrugService {
 		try {
 			em.createNativeQuery("INSERT INTO drug (drug_id, brand_name, company, composition,"
 					+ " drug_form, expiry_date, generic_id, generic_name, mrp, packing, unit_price)"
-					+ " VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
+					+ " VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
 					.setParameter(1, "TD" + em.createNativeQuery("select nextval ('drug_id_seq')").getSingleResult())
 					.setParameter(2, data.getBrandName()).setParameter(3, data.getCompany())
 					.setParameter(4, data.getComposition()).setParameter(5, data.getDrugForm())
@@ -159,7 +168,6 @@ public class DrugService {
 					.setParameter(8, data.getGenericName()).setParameter(9, data.getMrp())
 					.setParameter(10, data.getPacking()).setParameter(11, data.getMrp() / data.getPacking())
 					.executeUpdate();
-
 			return "Drug info saved successfully";
 		} catch (Exception e) {
 			logger.error("Problem while adding drug, Please try again", e);
@@ -184,7 +192,7 @@ public class DrugService {
 		Page<Drug> data = drugRepository.findAll(builder.getValue(), page);
 		if (data == null) {
 			logger.error("Drug Details not found for the given generic Id", HttpStatus.NOT_FOUND);
-			throw new CustomEntityNotFoundException(Drug.class, genericId);
+			throw new CustomEntityNotFoundException(Drug.class, "genericId", genericId);
 		}
 
 		return CollectionMapper.mapDrugDtoDrugDTO(data.getContent());
@@ -208,7 +216,7 @@ public class DrugService {
 		Page<Drug> data = drugRepository.findAll(builder.getValue(), page);
 		if (data == null) {
 			logger.error("Drug Details not found for the given generic name", HttpStatus.NOT_FOUND);
-			throw new CustomEntityNotFoundException(Drug.class, name);
+			throw new CustomEntityNotFoundException(Drug.class, "drugName", name);
 		}
 
 		return data.getContent().stream().map(x -> new DrugDTO(x)).collect(Collectors.toList());
@@ -232,7 +240,7 @@ public class DrugService {
 		Page<Drug> data = drugRepository.findAll(builder.getValue(), page);
 		if (data == null) {
 			logger.error("Drug Details not found for the given composition", HttpStatus.NOT_FOUND);
-			throw new CustomEntityNotFoundException(Drug.class, composition);
+			throw new CustomEntityNotFoundException(Drug.class, "composition", composition);
 		}
 
 		return data.getContent().stream().map(x -> new DrugDTO(x)).collect(Collectors.toList());
@@ -256,7 +264,7 @@ public class DrugService {
 		Drug data = drugRepository.findById(drugId).get();
 		if (data == null) {
 			logger.error("Drug Details not found", HttpStatus.NOT_FOUND);
-			throw new CustomEntityNotFoundException(Drug.class, drugId);
+			throw new CustomEntityNotFoundException(Drug.class, "drugId", drugId);
 		}
 		try {
 			drugRepository.save(Drug.builder().brandName(drugData.getBrandName()).company(drugData.getCompany())

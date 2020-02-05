@@ -1,8 +1,10 @@
-package com.rzb.pms.exception;
+package com.rzb.pms.exception.apierror;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver;
+import com.rzb.pms.exception.LowerCaseClassNameResolver;
+
 import lombok.Data;
 import org.hibernate.validator.internal.engine.path.PathImpl;
 import org.springframework.http.HttpStatus;

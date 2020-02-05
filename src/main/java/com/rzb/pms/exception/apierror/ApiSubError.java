@@ -1,4 +1,4 @@
-package com.rzb.pms.exception;
+package com.rzb.pms.exception.apierror;
 
 public abstract class ApiSubError {
 

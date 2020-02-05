@@ -52,7 +52,7 @@ public class GenericService {
 		Optional<Generic> genData = genericRepository.findById(id);
 		if (!genData.isPresent()) {
 			log.error("No generic found for the given id", HttpStatus.NOT_FOUND);
-			throw new CustomEntityNotFoundException(Generic.class, "id", id);
+			throw new CustomEntityNotFoundException(Generic.class, "genericId", id);
 		}
 
 		return GenericDto.builder().genericId(genData.get().getGenericId()).name(genData.get().getName())

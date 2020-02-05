@@ -24,7 +24,7 @@ public class DrugDispense {
 	private Integer dispenseId;
 	
 	private String mobileNumber;
-
+	
 	private String drugId;
 
 	private String genericName;

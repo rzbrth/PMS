@@ -2,19 +2,14 @@ package com.rzb.pms.dto;
 
 import java.util.List;
 
-import com.rzb.pms.model.DrugDispense;
+import lombok.Data;
 
+@Data
 public class AddToCartWrapper {
 
-	private List<DrugDispense> cart;
+	private List<DrugDispenseDTO> item;
 
-	public List<DrugDispense> getCart() {
-		return cart;
-	}
-
-	public void setCart(List<DrugDispense> cart) {
-		this.cart = cart;
-	}
+	private OtherInfoDTO info; 	
 	
 	
 }

@@ -26,8 +26,6 @@ public class DrugDtoReqRes {
 
 	private Float mrp;
 
-	private Float unitPrice;
-
 	private String genericId;
 
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
@@ -45,7 +43,6 @@ public class DrugDtoReqRes {
 		this.company = data.getCompany();
 		this.packing = data.getPacking();
 		this.mrp = data.getMrp();
-		this.unitPrice = data.getUnitPrice();
 		this.genericId = data.getGenericId();
 		this.expiryDate = data.getExpiryDate();
 	}

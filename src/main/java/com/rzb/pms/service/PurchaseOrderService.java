@@ -69,7 +69,8 @@ public class PurchaseOrderService {
 			 * id as fk save drug request to PoDrug.
 			 */
 			PurchaseOrder orderData = PurchaseOrder.builder().createdBy("").createdDate(new Date())
-					.poReference(BaseUtil.getRandomPoReference(ReferenceType.PO.toString())).poStatus(OrderStatus.PENDING.toString()).build();
+					.poReference(BaseUtil.getRandomPoReference(ReferenceType.PO.toString()))
+					.poStatus(OrderStatus.PENDING.toString()).build();
 			em.persist(orderData);
 			em.flush();
 
@@ -97,8 +98,8 @@ public class PurchaseOrderService {
 				throw new CustomException("Order can't be empty", HttpStatus.BAD_REQUEST);
 			}
 
-			repository.save(PurchaseOrder.builder().updatedBy("").updatedDate(new Date())
-					.poStatus(data.getPoStatus()).build());
+			repository.save(
+					PurchaseOrder.builder().updatedBy("").updatedDate(new Date()).poStatus(data.getPoStatus()).build());
 
 //			em.createNativeQuery("UPDATE purchase_order SET updated_by = ?, updated_date = ? WHERE po_id = ?")
 //					.setParameter(1, "").setParameter(2, new Date()).setParameter(3, data.getPoDrugId())
@@ -174,7 +175,7 @@ public class PurchaseOrderService {
 		PurchaseOrder order = repository.findById(poId).get();
 		if (order == null) {
 			logger.error("No purchase order available for given id", HttpStatus.NOT_FOUND);
-			throw new CustomEntityNotFoundException(PurchaseOrder.class, poId.toString());
+			throw new CustomEntityNotFoundException(PurchaseOrder.class, "poId", poId.toString());
 		}
 
 		return PurchaseOrderDTO.builder().createdBy(order.getCreatedBy()).createdDate(order.getCreatedDate())

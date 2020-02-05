@@ -151,7 +151,12 @@
 			<artifactId>rsql-querydsl-spring-boot-starter</artifactId>
 			<version>5.0.1</version>
 		</dependency>
-
+		<!-- converting Java 8 date and time classes to JSON representation using 
+			the @JsonFormat annotation -->
+		<dependency>
+			<groupId>com.fasterxml.jackson.datatype</groupId>
+			<artifactId>jackson-datatype-jsr310</artifactId>
+		</dependency>
 	</dependencies>
 
 	<build>

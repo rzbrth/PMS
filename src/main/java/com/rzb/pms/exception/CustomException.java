@@ -39,5 +39,4 @@ public class CustomException extends RuntimeException {
 	public HttpStatus getHttpStatus() {
 		return httpStatus;
 	}
-
 }

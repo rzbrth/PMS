@@ -13,7 +13,6 @@ import com.rzb.pms.config.ResponseSchema;
 import com.rzb.pms.dto.AddToCartWrapper;
 import com.rzb.pms.exception.CustomException;
 import com.rzb.pms.log.Log;
-import com.rzb.pms.model.DrugDispense;
 import com.rzb.pms.service.DrugDispensingService;
 import com.rzb.pms.utils.Endpoints;
 import com.rzb.pms.utils.ResponseUtil;
@@ -38,10 +37,8 @@ public class DrugDispenseController {
 			logger.error("Line Items can't be empty", HttpStatus.BAD_REQUEST);
 			throw new CustomException("Line Items can't be empty", HttpStatus.BAD_REQUEST);
 		}
-		for (DrugDispense lineitem : wrpper.getCart()) {
-			cartService.drugDispense(lineitem);
-		}
 
+		cartService.drugDispense(wrpper);
 		return new ResponseEntity<>(ResponseUtil.buildSuccessResponse("Success", new ResponseSchema<String>()),
 				HttpStatus.OK);
 	}

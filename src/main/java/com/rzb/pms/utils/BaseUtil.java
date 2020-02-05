@@ -6,6 +6,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.http.HttpStatus;
 
+import com.rzb.pms.dto.DrugType;
 import com.rzb.pms.dto.ReferenceType;
 import com.rzb.pms.exception.CustomException;
 import com.rzb.pms.log.Log;
@@ -177,10 +178,10 @@ public class BaseUtil {
 					HttpStatus.BAD_REQUEST);
 		}
 	}
+	public static float calculatePriceAfterDiscount(float mrp, float discount, float itemSellPriceBeforeDiscount) {
 
-	public static float calculatePriceAfterDiscount(float mrp, float discount) {
-
-		return ((100 - discount) * mrp) / 100;
+		
+		return ((100 - discount) * itemSellPriceBeforeDiscount) / 100;
 	}
 
 	public static String stripTrailingZero(String s) {
@@ -197,6 +198,43 @@ public class BaseUtil {
 			return "DIR-" + RandomStringUtils.randomAlphabetic(4);
 		}else {
 			return "";
+		}
+
+	}
+	
+	public static String findQntyInWord(Double avlQntyInWhole, String drugForm) {
+
+		String param = String.valueOf(avlQntyInWhole);
+		String LHS = param.split("\\.")[0];
+		String RHS = param.split("\\.")[1];
+		String lhsDrugForm = null;
+
+		if (drugForm.equalsIgnoreCase(DrugType.CAPSULE.toString())
+				|| drugForm.equalsIgnoreCase(DrugType.TABLET.toString())) {
+
+			lhsDrugForm = DrugType.STRIP.toString();
+			String result = LHS + " " + lhsDrugForm + " " + RHS + " " + getSuffix(drugForm);
+			return result;
+
+		} else {
+			lhsDrugForm = drugForm;
+			String result = LHS + " " + lhsDrugForm;
+			return result;
+		}
+
+	}
+
+	public static String getSuffix(String drugForm) {
+
+		if (drugForm.equalsIgnoreCase(DrugType.TABLET.toString())) {
+
+			return DrugType.TABLET.toString();
+
+		} else if (drugForm.equalsIgnoreCase(DrugType.CAPSULE.toString())) {
+
+			return DrugType.CAPSULE.toString();
+		} else {
+			return drugForm;
 		}
 
 	}

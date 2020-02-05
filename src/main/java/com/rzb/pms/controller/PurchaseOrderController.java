@@ -22,6 +22,8 @@ import com.rzb.pms.dto.PoCreateDTO;
 import com.rzb.pms.dto.PoUpdateDTO;
 import com.rzb.pms.dto.PurchaseOrderDTO;
 import com.rzb.pms.dto.PurchaseOrderResponse;
+import com.rzb.pms.exception.CustomEntityNotFoundException;
+import com.rzb.pms.exception.CustomException;
 import com.rzb.pms.log.Log;
 import com.rzb.pms.service.PurchaseOrderService;
 import com.rzb.pms.utils.BaseUtil;
@@ -47,7 +49,7 @@ public class PurchaseOrderController {
 			@ApiParam(value = "Page No", required = true) @RequestParam(defaultValue = "0") Integer page,
 			@ApiParam(value = "Page Size", required = true) @RequestParam(defaultValue = "10") Integer size,
 			@RequestParam(defaultValue = "createdDate:DESC", required = false) String sort,
-			@ApiParam(value = "Search Param") @RequestParam(defaultValue = "") String search) {
+			@ApiParam(value = "Search Param") @RequestParam(defaultValue = "") String search) throws CustomEntityNotFoundException {
 
 		logger.info("Search Parameter: " + search);
 		logger.info("Sort Parameter: " + sort);
@@ -64,7 +66,8 @@ public class PurchaseOrderController {
 	@GetMapping(Endpoints.PO_BY_ID)
 	@ApiOperation("Get purchase order by Id")
 	public ResponseEntity<ResponseSchema<PurchaseOrderDTO>> getPoById(
-			@ApiParam(value = "Purchase Order Id", required = true) @RequestParam(required = true) Integer poId) {
+			@ApiParam(value = "Purchase Order Id", required = true) @RequestParam(required = true) Integer poId)
+			throws CustomEntityNotFoundException {
 
 		return new ResponseEntity<>(ResponseUtil.buildSuccessResponse(orderService.findPOById(poId),
 				new ResponseSchema<PurchaseOrderDTO>()), HttpStatus.OK);

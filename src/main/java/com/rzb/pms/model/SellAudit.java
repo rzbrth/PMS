@@ -51,7 +51,7 @@ public class SellAudit {
 
 	private String paymentMode;
 
-	private String mobileNumber;
+	private String customerMobileNumber;
 
 	private Double reqQntyInWhole;
 
