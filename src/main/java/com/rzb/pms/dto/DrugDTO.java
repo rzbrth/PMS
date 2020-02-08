@@ -2,8 +2,6 @@ package com.rzb.pms.dto;
 
 import java.util.Date;
 
-import javax.validation.constraints.NotNull;
-
 import com.rzb.pms.model.Drug;
 
 import lombok.AllArgsConstructor;

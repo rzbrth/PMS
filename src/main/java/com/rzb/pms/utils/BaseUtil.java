@@ -178,9 +178,9 @@ public class BaseUtil {
 					HttpStatus.BAD_REQUEST);
 		}
 	}
+
 	public static float calculatePriceAfterDiscount(float mrp, float discount, float itemSellPriceBeforeDiscount) {
 
-		
 		return ((100 - discount) * itemSellPriceBeforeDiscount) / 100;
 	}
 
@@ -194,14 +194,14 @@ public class BaseUtil {
 
 		if (ReferenceType.PO.toString().equalsIgnoreCase(type)) {
 			return "PO-" + RandomStringUtils.randomAlphabetic(4);
-		} else if (ReferenceType.DIRECT_STOCK.toString().equalsIgnoreCase(type)) {
-			return "DIR-" + RandomStringUtils.randomAlphabetic(4);
-		}else {
+		} else if (ReferenceType.SELL.toString().equalsIgnoreCase(type)) {
+			return "SL-" + RandomStringUtils.randomAlphabetic(4);
+		} else {
 			return "";
 		}
 
 	}
-	
+
 	public static String findQntyInWord(Double avlQntyInWhole, String drugForm) {
 
 		String param = String.valueOf(avlQntyInWhole);

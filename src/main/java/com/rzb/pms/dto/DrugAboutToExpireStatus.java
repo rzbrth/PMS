@@ -4,12 +4,8 @@ import java.time.temporal.ChronoUnit;
 import java.util.Date;
 
 import org.apache.commons.lang3.time.DateFormatUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import com.rzb.pms.model.Stock;
-import com.rzb.pms.repository.DistributerRepository;
-import com.rzb.pms.repository.DrugRepository;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -58,8 +54,7 @@ public class DrugAboutToExpireStatus {
 
 		return DrugAboutToExpireStatus.builder().avlQuantityInTrimmed(stock.getAvlQntyTrimmed())
 				.avlQuantityInWhole(stock.getAvlQntyWhole()).distributerId(stock.getDistributerId())
-				.distributerName(distributerName)
-				.drugId(stock.getDrugId()).drugName(drugName)
+				.distributerName(distributerName).drugId(stock.getDrugId()).drugName(drugName)
 				.expireDate(DateFormatUtils.format(stock.getExpiryDate(), "dd-MM-yyyy HH:mm:SS"))
 				.invoiceReference(stock.getInvoiceReference()).location(stock.getLocation()).stockId(stock.getStockId())
 				.expireStatus(status).expireTimeLeft(String.valueOf(expireTimeRemains)).build();

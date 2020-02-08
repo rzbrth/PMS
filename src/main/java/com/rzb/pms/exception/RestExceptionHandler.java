@@ -35,7 +35,8 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 	@Log
 	private Logger log;
 
-	// Let Spring BasicErrorController handle the exception, we just override the status code to 400
+	// Let Spring BasicErrorController handle the exception, we just override the
+	// status code to 400
 	@ExceptionHandler(CustomEntityNotFoundException.class)
 	public void springHandleNotFound(HttpServletResponse response) throws IOException {
 		response.sendError(HttpStatus.NOT_FOUND.value());

@@ -59,6 +59,8 @@ public class Stock {
 
 	private String invoiceReference;
 
-	private Integer poId;
+	private String poReferenseNumber;
+
+	private Integer poLId;
 
 }

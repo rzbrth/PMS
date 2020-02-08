@@ -9,7 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -57,7 +56,8 @@ public class DrugController {
 	@GetMapping(Endpoints.SEARCH_MEDECINE_BY_ID)
 	@ApiOperation("Find drug by drug id")
 	public ResponseEntity<ResponseSchema<DrugDTO>> getDrugById(
-			@ApiParam(value = "Drug Id", required = true) @Valid @PathVariable String drugId) throws CustomEntityNotFoundException {
+			@ApiParam(value = "Drug Id", required = true) @Valid @PathVariable String drugId)
+			throws CustomEntityNotFoundException {
 
 		return new ResponseEntity<>(
 				ResponseUtil.buildSuccessResponse(drugService.getdrugById(drugId), new ResponseSchema<DrugDTO>()),

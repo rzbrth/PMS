@@ -13,7 +13,7 @@ public class CustomEntityNotFoundException extends RuntimeException {
 	 */
 	private static final long serialVersionUID = 1220025804090090927L;
 
-	public CustomEntityNotFoundException(Class clazz, String... searchParamsMap) {
+	public CustomEntityNotFoundException(Class<?> clazz, String... searchParamsMap) {
 		super(CustomEntityNotFoundException.createteMessage(clazz.getSimpleName(),
 				toMap(String.class, String.class, searchParamsMap)));
 	}

@@ -12,4 +12,7 @@ import lombok.NoArgsConstructor;
 public class StockDirectRequestDTOWrapper {
 
 	private List<StockDirectRequestDTO> data;
+	
+	private String purchaseInvoiceNumber;
+
 }

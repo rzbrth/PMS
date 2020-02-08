@@ -60,5 +60,8 @@ public class DrugDispense {
 	private String drugForm;
 
 	private String customerName;
+	
+	private String sellInvoiceNumber;
+
 
 }

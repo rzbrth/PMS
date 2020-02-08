@@ -18,12 +18,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.rzb.pms.config.ResponseSchema;
-import com.rzb.pms.dto.PoCreateDTO;
+import com.rzb.pms.dto.PoLienItemCreateDTO;
 import com.rzb.pms.dto.PoUpdateDTO;
-import com.rzb.pms.dto.PurchaseOrderDTO;
-import com.rzb.pms.dto.PurchaseOrderResponse;
+import com.rzb.pms.dto.PurchaseOrderLineItemsDTO;
+import com.rzb.pms.dto.PurchaseOrderLineItemResponse;
 import com.rzb.pms.exception.CustomEntityNotFoundException;
-import com.rzb.pms.exception.CustomException;
 import com.rzb.pms.log.Log;
 import com.rzb.pms.service.PurchaseOrderService;
 import com.rzb.pms.utils.BaseUtil;
@@ -45,37 +44,38 @@ public class PurchaseOrderController {
 
 	@GetMapping
 	@ApiOperation("Get all purchase order")
-	public ResponseEntity<ResponseSchema<List<PurchaseOrderResponse>>> getAllPO(
+	public ResponseEntity<ResponseSchema<List<PurchaseOrderLineItemResponse>>> getAllPO(
 			@ApiParam(value = "Page No", required = true) @RequestParam(defaultValue = "0") Integer page,
 			@ApiParam(value = "Page Size", required = true) @RequestParam(defaultValue = "10") Integer size,
 			@RequestParam(defaultValue = "createdDate:DESC", required = false) String sort,
-			@ApiParam(value = "Search Param") @RequestParam(defaultValue = "") String search) throws CustomEntityNotFoundException {
+			@ApiParam(value = "Search Param") @RequestParam(defaultValue = "") String search)
+			throws CustomEntityNotFoundException {
 
 		logger.info("Search Parameter: " + search);
 		logger.info("Sort Parameter: " + sort);
 
 		Sort sortCriteria = BaseUtil.getSortObject(sort);
 		PageRequest pageRequest = PageRequest.of(page - 1, size, sortCriteria);
-		List<PurchaseOrderResponse> response = orderService.findAllOrder(search, pageRequest);
+		List<PurchaseOrderLineItemResponse> response = orderService.findAllOrder(search, pageRequest);
 
 		return new ResponseEntity<>(
-				ResponseUtil.buildSuccessResponse(response, new ResponseSchema<List<PurchaseOrderResponse>>()),
+				ResponseUtil.buildSuccessResponse(response, new ResponseSchema<List<PurchaseOrderLineItemResponse>>()),
 				HttpStatus.OK);
 	}
 
 	@GetMapping(Endpoints.PO_BY_ID)
 	@ApiOperation("Get purchase order by Id")
-	public ResponseEntity<ResponseSchema<PurchaseOrderDTO>> getPoById(
+	public ResponseEntity<ResponseSchema<PurchaseOrderLineItemsDTO>> getPoById(
 			@ApiParam(value = "Purchase Order Id", required = true) @RequestParam(required = true) Integer poId)
 			throws CustomEntityNotFoundException {
 
 		return new ResponseEntity<>(ResponseUtil.buildSuccessResponse(orderService.findPOById(poId),
-				new ResponseSchema<PurchaseOrderDTO>()), HttpStatus.OK);
+				new ResponseSchema<PurchaseOrderLineItemsDTO>()), HttpStatus.OK);
 	}
 
 	@PostMapping
 	@ApiOperation("Create purchase order")
-	public ResponseEntity<ResponseSchema<String>> createPO(@RequestBody PoCreateDTO data) {
+	public ResponseEntity<ResponseSchema<String>> createPO(@RequestBody PoLienItemCreateDTO data) {
 
 		return new ResponseEntity<>(
 				ResponseUtil.buildSuccessResponse(orderService.createPO(data), new ResponseSchema<String>()),
