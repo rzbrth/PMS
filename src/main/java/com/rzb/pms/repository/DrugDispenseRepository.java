@@ -5,6 +5,7 @@ import org.springframework.data.repository.CrudRepository;
 
 import com.rzb.pms.model.DrugDispense;
 
-public interface DrugDispenseRepository extends JpaRepository<DrugDispense, Integer>, CrudRepository<DrugDispense, Integer> {
+public interface DrugDispenseRepository
+		extends JpaRepository<DrugDispense, Integer>, CrudRepository<DrugDispense, Integer> {
 
 }

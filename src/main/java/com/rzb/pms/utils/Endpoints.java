@@ -36,13 +36,7 @@ public class Endpoints {
 	//public static final String GENERIC_AUTOCOMPLETE = GENERIC + MANUFACTURES;
 	
 	//Cart
-	public static final String CART ="/cart";
-	
-	public static final String ADD_TO_CART = "/addToCart";
-	
-	public static final String REMOVE_FROM_CART = "/removeFromCart";
-	
-	public static final String RETRIVE_FROM_CART = "/getCartItem";
+	public static final String SELL ="/sell";	
 	
 	//Stock
 	public static final String STOCK ="/stock";

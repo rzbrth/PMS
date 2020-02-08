@@ -22,7 +22,6 @@ import org.springframework.stereotype.Service;
 
 import com.querydsl.core.BooleanBuilder;
 import com.rzb.pms.dto.DrugAboutToExpireStatus;
-import com.rzb.pms.dto.DrugAutoCompleteDTO;
 import com.rzb.pms.dto.DrugDTO;
 import com.rzb.pms.dto.DrugDtoReqRes;
 import com.rzb.pms.dto.DrugSearchResponse;
@@ -133,15 +132,9 @@ public class DrugService {
 			throw new CustomException("No data available", HttpStatus.NOT_FOUND);
 		}
 		logger.info("Total Drug Record as per Search Criteria" + drugs.getContent().size());
-		
-		CollectionMapper.mapDrugToDrugAutoCompleteDTO(drugs.getContent());
-		return null;
-		
-		
-//		List<DrugAutoCompleteDTO> drugSearchList = drugs.getContent().stream().map(x -> new DrugAutoCompleteDTO(x))
-//				.collect(Collectors.toList());
 
-		//return new DrugSearchResponse(drugSearchList, drugs.getTotalElements());
+		return new DrugSearchResponse(CollectionMapper.mapDrugToDrugAutoCompleteDTO(drugs.getContent()),
+				drugs.getTotalElements());
 	}
 
 	/**

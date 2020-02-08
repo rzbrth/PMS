@@ -1,51 +1,50 @@
 package com.rzb.pms.model;
 
-import java.util.Date;
-import java.util.List;
-
-import javax.persistence.CascadeType;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToMany;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
 
+@Entity
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString
 @Builder
-@Entity
 public class PurchaseOrder {
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO)
+	@GeneratedValue(strategy = GenerationType.SEQUENCE)
 	private Integer poId;
 
-	private Date createdDate;
+	private String drugName;
 
-	private Date updatedDate;
+	private String drugDescription;
 
-	private String createdBy;
+	private Double drugQuantity;
 
-	private String updatedBy;
+	private float drugPrice;
 
-	private String poStatus;
+	private String drugId;
 
-	private String poReference;
+	private Integer poLId;
 
-//	@OneToMany(mappedBy = "orders")
-//	private List<PoDrug> podrug;
-	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-	@JoinColumn(name = "poId", insertable = false, updatable = false)
-	private List<PoDrug> podrug;
+	private Integer distributerId;
+
+//	@ManyToOne(cascade = CascadeType.PERSIST,fetch = FetchType.LAZY)
+//	@JoinColumn(name = "drugId", insertable = false, updatable = false)
+//	private Drug drugs;
+//
+//	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+//	@JoinColumn(name = "poId", insertable = false, updatable = false)
+//	private PurchaseOrderLineItems orders;
+//
+//	@ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
+//	@JoinColumn(name = "distributerId", insertable = false, updatable = false)
+//	private Distributer distributer;
 
 }

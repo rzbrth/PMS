@@ -2,11 +2,6 @@ package com.rzb.pms.dto;
 
 import java.util.Date;
 
-import javax.persistence.CascadeType;
-import javax.persistence.FetchType;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-
 import com.rzb.pms.model.Customer;
 
 import lombok.AllArgsConstructor;
@@ -49,9 +44,9 @@ public class AddToCartDTO {
 	private float discount;
 
 	private String paymentMode;
-	
+
 	private Customer customer;
-    
+
 	private Date expiryDate;
 
 	private String drugForm;

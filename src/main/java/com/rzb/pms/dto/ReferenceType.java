@@ -2,7 +2,7 @@ package com.rzb.pms.dto;
 
 public enum ReferenceType {
 
-	PO, DIRECT_STOCK, PO_STOCK;
+	PO, SELL;
 
 	@Override
 	public String toString() {

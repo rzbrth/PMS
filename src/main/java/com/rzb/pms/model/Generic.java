@@ -13,11 +13,6 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Parameter;
-
-import com.rzb.pms.utils.PrefixSeqGen;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -32,10 +27,6 @@ public class Generic {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.SEQUENCE)
-//	@GenericGenerator(name = "generic_id_seq", strategy = "com.rzb.pms.utils.PrefixSeqGen", parameters = {
-//			@Parameter(name = PrefixSeqGen.INCREMENT_PARAM, value = "1"),
-//			@Parameter(name = PrefixSeqGen.VALUE_PREFIX_PARAMETER, value = "GEN"),
-//			@Parameter(name = PrefixSeqGen.NUMBER_FORMAT_PARAMETER, value = "%05d") })
 	private String genericId;
 
 	private String name;
@@ -61,7 +52,7 @@ public class Generic {
 	private Boolean alcoholInteraction;
 
 	private Date expireDate;
-    
+
 //	@OneToMany(mappedBy = "genericPharma", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
 //	@JsonIgnoreProperties("genericPharma")
 //	private List<Drug> drugs = new ArrayList<Drug>();

@@ -4,7 +4,6 @@ import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -20,7 +19,7 @@ import com.rzb.pms.utils.ResponseUtil;
 import io.swagger.annotations.ApiOperation;
 
 @RestController
-@RequestMapping(Endpoints.VERSION_1 + Endpoints.CART)
+@RequestMapping(Endpoints.VERSION_1 + Endpoints.SELL)
 public class DrugDispenseController {
 
 	@Log
@@ -28,12 +27,11 @@ public class DrugDispenseController {
 
 	@Autowired
 	private DrugDispensingService cartService;
-	
-	@PostMapping(Endpoints.ADD_TO_CART)
+
 	@ApiOperation("Dispense drug")
 	public ResponseEntity<ResponseSchema<String>> addLineItemDispenseList(@RequestBody AddToCartWrapper wrpper) {
 
-		if(wrpper == null) {
+		if (wrpper == null) {
 			logger.error("Line Items can't be empty", HttpStatus.BAD_REQUEST);
 			throw new CustomException("Line Items can't be empty", HttpStatus.BAD_REQUEST);
 		}

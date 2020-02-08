@@ -2,7 +2,7 @@ package com.rzb.pms.dto;
 
 import java.util.Date;
 
-import com.rzb.pms.model.PoDrug;
+import com.rzb.pms.model.PurchaseOrder;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 @Builder
 public class StockDrugDTO {
 
-	private Integer poDrugId;
+	private Integer poId;
 
 	private String drugName;
 
@@ -27,22 +27,22 @@ public class StockDrugDTO {
 
 	private String drugId;
 
-	private Integer poId;
+	private Integer poLId;
 
 	private Integer distributerId;
-	
+
 	private Date expireDate;
-	
+
 	private String location;
 
-	public StockDrugDTO(PoDrug data) {
+	public StockDrugDTO(PurchaseOrder data) {
 		this.distributerId = data.getDistributerId();
 		this.drugDescription = data.getDrugDescription();
 		this.drugId = data.getDrugId();
 		this.drugName = data.getDrugName();
 		this.drugPrice = data.getDrugPrice();
 		this.drugQuantity = data.getDrugQuantity();
-		this.poDrugId = data.getPoDrugId();
 		this.poId = data.getPoId();
+		this.poLId = data.getPoLId();
 	}
 }

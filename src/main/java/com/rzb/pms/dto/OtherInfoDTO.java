@@ -14,7 +14,7 @@ public class OtherInfoDTO {
 	private String paymentMode;
 
 	private Boolean isInvoiceRequired;
-	
+
 	private float discount;
 
 	private String invoiceType;// print invoice or email invoice

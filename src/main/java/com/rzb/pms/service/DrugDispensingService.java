@@ -15,6 +15,7 @@ import com.rzb.pms.dto.AddToCartWrapper;
 import com.rzb.pms.dto.DrugDispenseDTO;
 import com.rzb.pms.dto.DrugType;
 import com.rzb.pms.dto.OtherInfoDTO;
+import com.rzb.pms.dto.ReferenceType;
 import com.rzb.pms.exception.CustomException;
 import com.rzb.pms.log.Log;
 import com.rzb.pms.model.Customer;
@@ -145,26 +146,10 @@ public class DrugDispensingService {
 					// Persisting an entity only makes it "attached" to the persistence context.
 					em.flush();
 
-					auditRepository.save(SellAudit.builder().brandName(drugData.getBrandName())
-							.composition(drugData.getComposition()).discount(restData.getDiscount())
-							.drugId(item.getDrugId()).genericName(drugData.getGenericName())
-							.itemSellPrice(itemSellPriceAfterDiscount).itemSellQuantity(item.getItemSellQuantity())
-							.reqQntyInWhole(reqQntyInWhole).reqQntyInTrimmed(reqQntyInTrimmed).location(location)
-							.mrp(drugData.getMrp()).packing(drugData.getPacking())
-							.paymentMode(restData.getPaymentMode()).sellBy("").sellDate(new Date())
-							.expiryDate(drugData.getExpiryDate()).drugForm(drugData.getDrugForm())
-							.customerMobileNumber(restData.getCustomerMobileNumber())
+					auditRepository.save(SellAudit.builder()
 							.customerId(customer.getCustomerId()).build());
 				} else {
-					auditRepository.save(SellAudit.builder().brandName(drugData.getBrandName())
-							.composition(drugData.getComposition()).discount(restData.getDiscount())
-							.drugId(item.getDrugId()).genericName(drugData.getGenericName())
-							.itemSellPrice(itemSellPriceAfterDiscount).itemSellQuantity(item.getItemSellQuantity())
-							.reqQntyInWhole(reqQntyInWhole).reqQntyInTrimmed(reqQntyInTrimmed).location(location)
-							.mrp(drugData.getMrp()).packing(drugData.getPacking())
-							.paymentMode(restData.getPaymentMode()).sellBy("").sellDate(new Date())
-							.expiryDate(drugData.getExpiryDate()).drugForm(drugData.getDrugForm())
-							.customerMobileNumber(restData.getCustomerMobileNumber()).customerId(data.getCustomerId())
+					auditRepository.save(SellAudit.builder().customerId(data.getCustomerId())
 							.build());
 				}
 
@@ -176,7 +161,9 @@ public class DrugDispensingService {
 								.itemSellPrice(itemSellPriceAfterDiscount).itemSellQuantity(item.getItemSellQuantity())
 								.location(stock.getLocation()).mobileNumber(restData.getCustomerMobileNumber())
 								.mrp(stock.getMrp()).packing(stock.getPacking()).paymentMode(restData.getPaymentMode())
-								.sellBy("").unitPrice(stock.getMrp() / stock.getPacking()).build());
+								.sellBy("").unitPrice(stock.getMrp() / stock.getPacking())
+								.sellInvoiceNumber(BaseUtil.getRandomPoReference(ReferenceType.SELL.toString()))
+								.build());
 
 			}
 

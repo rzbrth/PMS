@@ -13,9 +13,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class StockOrderDTO {
+public class PurchaseOrderLineItemsDTO {
 
-	
 	private Integer poLId;
 
 	private Date createdDate;
@@ -27,10 +26,13 @@ public class StockOrderDTO {
 	private String updatedBy;
 	
 	private String poStatus;
-
-	private List<StockDrugDTO> data;
 	
-	public StockOrderDTO(PurchaseOrderLineItems data) {
+	private String poReference;
+
+
+	private List<PurchaseOrderDTO> poLineItem;
+	
+	public PurchaseOrderLineItemsDTO(PurchaseOrderLineItems data) {
 		
 		this.poLId = data.getPoLId();
 		this.createdDate = data.getCreatedDate();

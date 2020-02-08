@@ -32,5 +32,5 @@ public class StockDirectRequestDTO {
 	private Double avlQntyWhole;
 
 	private Double avlQntyTrimmed;
-
+	
 }
