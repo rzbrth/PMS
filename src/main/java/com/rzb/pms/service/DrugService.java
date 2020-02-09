@@ -133,7 +133,7 @@ public class DrugService {
 		}
 		logger.info("Total Drug Record as per Search Criteria" + drugs.getContent().size());
 
-		return new DrugSearchResponse(CollectionMapper.mapDrugToDrugAutoCompleteDTO(drugs.getContent()),
+		return new DrugSearchResponse(CollectionMapper.mapDrugToDrugAutoCompleteDTO(drugs.getContent(), stockRepository),
 				drugs.getTotalElements());
 	}
 
@@ -188,7 +188,7 @@ public class DrugService {
 			throw new CustomEntityNotFoundException(Drug.class, "genericId", genericId);
 		}
 
-		return CollectionMapper.mapDrugDtoDrugDTO(data.getContent());
+		return CollectionMapper.mapDrugDtoDrugDTO(data.getContent(), stockRepository);
 
 	}
 

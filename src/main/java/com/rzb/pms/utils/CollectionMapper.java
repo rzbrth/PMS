@@ -3,7 +3,6 @@ package com.rzb.pms.utils;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.rzb.pms.dto.DrugAutoCompleteDTO;
@@ -11,9 +10,10 @@ import com.rzb.pms.dto.DrugDTO;
 import com.rzb.pms.dto.DrugType;
 import com.rzb.pms.dto.PurchaseOrderDTO;
 import com.rzb.pms.dto.PurchaseOrderLineItemsDTO;
+import com.rzb.pms.dto.StockProjPost;
+import com.rzb.pms.dto.StockProjPre;
 import com.rzb.pms.model.Drug;
 import com.rzb.pms.model.PurchaseOrderLineItems;
-import com.rzb.pms.model.Stock;
 import com.rzb.pms.repository.StockRepository;
 
 /*
@@ -22,9 +22,6 @@ import com.rzb.pms.repository.StockRepository;
  */
 @Component
 public abstract class CollectionMapper<FROM, TO> {
-
-	@Autowired
-	private static StockRepository stockRepository;
 
 	abstract TO transformCollection(FROM from);
 
@@ -36,7 +33,7 @@ public abstract class CollectionMapper<FROM, TO> {
 		return to;
 	}
 
-	public static List<DrugDTO> mapDrugDtoDrugDTO(List<Drug> list) {
+	public static List<DrugDTO> mapDrugDtoDrugDTO(List<Drug> list, StockRepository stockRepository) {
 
 		CollectionMapper<Drug, DrugDTO> transformer = new CollectionMapper<Drug, DrugDTO>() {
 
@@ -70,48 +67,51 @@ public abstract class CollectionMapper<FROM, TO> {
 					}
 				}
 
-				return PurchaseOrderLineItemsDTO.builder().createdBy(from.getCreatedBy()).createdDate(from.getCreatedDate())
-						.poLId(from.getPoLId()).updatedBy(from.getUpdatedBy()).updatedDate(from.getUpdatedDate())
-						.poReference(from.getPoReference()).poLineItem(parsedData).poStatus(from.getPoStatus()).build();
+				return PurchaseOrderLineItemsDTO.builder().createdBy(from.getCreatedBy())
+						.createdDate(from.getCreatedDate()).poLId(from.getPoLId()).updatedBy(from.getUpdatedBy())
+						.updatedDate(from.getUpdatedDate()).poReference(from.getPoReference()).poLineItem(parsedData)
+						.poStatus(from.getPoStatus()).build();
 			}
 		};
 		return transformer.transformCollection(list);
 	}
 
-	public static List<DrugAutoCompleteDTO> mapDrugToDrugAutoCompleteDTO(List<Drug> from) {
+	public static List<DrugAutoCompleteDTO> mapDrugToDrugAutoCompleteDTO(List<Drug> from,
+			StockRepository stockRepository) {
 
 		CollectionMapper<Drug, DrugAutoCompleteDTO> transformer = new CollectionMapper<Drug, DrugAutoCompleteDTO>() {
 
 			@Override
 			DrugAutoCompleteDTO transformCollection(Drug from) {
 
-				List<String> result;
+				List<StockProjPre> data = new ArrayList<StockProjPre>();
+				List<StockProjPost> result = new ArrayList<StockProjPost>();
 
-				String wholeAvlQntyInWords = null, location = null;
-				List<Stock> stockInfo = stockRepository.findByDrugId(from.getDrugId());
-				if (stockInfo.isEmpty()) {
-					wholeAvlQntyInWords = "No Stock Available";
-					location = null;
+				List<Object[]> stockInfo = stockRepository.findByDrugId(from.getDrugId());
+				if (!stockInfo.isEmpty()) {
+					for (Object x[] : stockInfo) {
 
-				} else {
-					for (Stock x : stockInfo) {
-
-						if (x.getAvlQntyWhole() % 1 != 0) {
-							wholeAvlQntyInWords = BaseUtil.findQntyInWord(x.getAvlQntyWhole(), from.getDrugForm());
-							
-
-						} else {
-							wholeAvlQntyInWords = BaseUtil.stripTrailingZero(String.valueOf(x.getAvlQntyWhole())) + " "
-									+ DrugType.STRIP.toString() + " " + "of" + " " + from.getDrugForm();
-						}
-
+						data.add(StockProjPre.builder().location((String) x[1]).avlQntyWhole((Double) x[0]).build());
 					}
+
+				}
+				for (StockProjPre d : data) {
+
+					result.add(StockProjPost.builder()
+							.avlQntyWhole(d.getAvlQntyWhole() % 1 != 0
+									? BaseUtil.findQntyInWord(d.getAvlQntyWhole(), from.getDrugForm())
+
+									: BaseUtil.stripTrailingZero(String.valueOf(d.getAvlQntyWhole())) + " "
+											+ DrugType.STRIP.toString()
+
+							).location(d.getLocation()).build());
+
 				}
 
 				return DrugAutoCompleteDTO.builder().brandName(from.getBrandName()).company(from.getCompany())
 						.composition(from.getComposition()).drugForm(from.getDrugForm()).drugId(from.getDrugId())
 						.genericId(from.getGenericId()).genericName(from.getGenericName()).mrp(from.getMrp())
-						.packing(from.getPacking()).wholeAvlQntyInWords(wholeAvlQntyInWords).build();
+						.packing(from.getPacking()).stockInfo(result).build();
 			}
 
 		};
