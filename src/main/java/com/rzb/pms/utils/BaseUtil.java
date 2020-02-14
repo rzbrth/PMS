@@ -213,8 +213,13 @@ public class BaseUtil {
 				|| drugForm.equalsIgnoreCase(DrugType.TABLET.toString())) {
 
 			lhsDrugForm = DrugType.STRIP.toString();
-			String result = LHS + " " + lhsDrugForm + " " + RHS + " " + getSuffix(drugForm);
-			return result;
+			if (Integer.valueOf(LHS) == 0) {
+				String result = RHS + " " + getSuffix(drugForm);
+				return result;
+			} else {
+				String result = LHS + " " + lhsDrugForm + " " + RHS + " " + getSuffix(drugForm);
+				return result;
+			}
 
 		} else {
 			lhsDrugForm = drugForm;

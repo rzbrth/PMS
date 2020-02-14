@@ -1,7 +1,5 @@
 package com.rzb.pms.dto;
 
-import java.util.List;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,10 +9,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class PoLienItemCreateDTO {
+public class StockProjPost {
 
-	private List<PoLineItemAddDTO> lineItem;
+	private String avlQntyWhole;
 
-	private Integer distributerId;
-
+	private String location;
 }

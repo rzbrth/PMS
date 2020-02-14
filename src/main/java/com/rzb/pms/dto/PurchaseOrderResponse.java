@@ -11,11 +11,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class PurchaseOrderLineItemResponse {
+public class PurchaseOrderResponse {
 
-	private List<PurchaseOrderLineItemsDTO> poData;
-	
-	private String purchaseInvoiceNumber;
-
+	private List<PurchaseOrderDTO> poData;
 
 }

@@ -11,18 +11,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class PoUpdateDTO {
+public class PoCreateDTO {
 
-	private List<PoLineItemUpdateDTO> updateLineItems;
-	
+	private List<PoLineItemAddDTO> lineItem;
+
 	private Integer distributerId;
-	
-	//private Integer poDrugId;
-
-	private Integer poId;
-	
-	private String poStatus;
-	
-	
 
 }

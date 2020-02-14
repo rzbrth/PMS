@@ -17,7 +17,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class SellAudit {
+public class Audit {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)

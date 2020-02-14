@@ -1,5 +1,7 @@
 package com.rzb.pms.dto;
 
+import java.util.List;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -28,7 +30,7 @@ public class DrugAutoCompleteDTO {
 	private String genericId;
 
 	private String drugForm;
-
-	private String wholeAvlQntyInWords;
+	
+	private List<StockProjPost> stockInfo;
 
 }

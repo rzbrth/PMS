@@ -6,7 +6,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -36,7 +35,6 @@ public class AutocompleteController {
 
 	@GetMapping(Endpoints.MEDECINE_AUTOCOMPLETE)
 	@ApiOperation("Search medecine by genericName, brandName, company, composition, location")
-	@ExceptionHandler
 	public ResponseEntity<ResponseSchema<DrugSearchResponse>> getAllDrugs(
 			@ApiParam(value = "Search Param", required = true, allowableValues = "brandName=lk=COSACOL, genericName=lk=aminosalicylic acid, company=lk=CIPLA, composition=lk=Mesalamine") @RequestParam(value = "search") String search,
 			@RequestParam(defaultValue = "0", required = false) Integer page,

@@ -21,4 +21,6 @@ public class PoLineItemUpdateDTO {
 
 	private float drugPrice;
 
+	private Integer poDrugId;
+
 }

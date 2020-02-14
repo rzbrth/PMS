@@ -7,11 +7,14 @@ import com.rzb.pms.model.Drug;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
+
+@EqualsAndHashCode(callSuper=false)
 @Data
 @AllArgsConstructor
 @Builder
-public class DrugDTO {
+public class DrugDTO extends AbstractResolver{
 
 	private String drugId;
 

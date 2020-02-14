@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.rzb.pms.config.ResponseSchema;
-import com.rzb.pms.dto.PurchaseOrderLineItemResponse;
+import com.rzb.pms.dto.PurchaseOrderResponse;
 import com.rzb.pms.dto.StockDirectRequestDTOWrapper;
 import com.rzb.pms.log.Log;
 import com.rzb.pms.service.StockService;
@@ -47,7 +47,7 @@ public class StockController {
 	 */
 	@PostMapping(Endpoints.ADD_STOCK_FROM_PO)
 	@ApiOperation("Add stock from po")
-	public ResponseEntity<ResponseSchema<String>> addStockFromPO(@RequestBody PurchaseOrderLineItemResponse po) {
+	public ResponseEntity<ResponseSchema<String>> addStockFromPO(@RequestBody PurchaseOrderResponse po) {
 
 		return new ResponseEntity<>(
 				ResponseUtil.buildSuccessResponse(service.addStockFromPR(po), new ResponseSchema<String>()),
