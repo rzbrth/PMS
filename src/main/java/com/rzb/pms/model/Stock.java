@@ -62,5 +62,7 @@ public class Stock {
 	private String poReferenseNumber;
 
 	private Integer poLId;
+	
+	private Integer poId;
 
 }

@@ -8,12 +8,12 @@ import org.springframework.stereotype.Component;
 import com.rzb.pms.dto.DrugAutoCompleteDTO;
 import com.rzb.pms.dto.DrugDTO;
 import com.rzb.pms.dto.DrugType;
+import com.rzb.pms.dto.PoDrugDTO;
 import com.rzb.pms.dto.PurchaseOrderDTO;
-import com.rzb.pms.dto.PurchaseOrderLineItemsDTO;
 import com.rzb.pms.dto.StockProjPost;
 import com.rzb.pms.dto.StockProjPre;
 import com.rzb.pms.model.Drug;
-import com.rzb.pms.model.PurchaseOrderLineItems;
+import com.rzb.pms.model.PurchaseOrder;
 import com.rzb.pms.repository.StockRepository;
 
 /*
@@ -53,24 +53,23 @@ public abstract class CollectionMapper<FROM, TO> {
 		return transformer.transformCollection(list);
 	}
 
-	public static List<PurchaseOrderLineItemsDTO> mapPurchaseOrderToPurchaseOrderDTO(List<PurchaseOrderLineItems> list,
-			List<PurchaseOrderDTO> po) {
+	public static List<PurchaseOrderDTO> mapPurchaseOrderToPurchaseOrderDTO(List<PurchaseOrder> list,
+			List<PoDrugDTO> po) {
 
-		CollectionMapper<PurchaseOrderLineItems, PurchaseOrderLineItemsDTO> transformer = new CollectionMapper<PurchaseOrderLineItems, PurchaseOrderLineItemsDTO>() {
+		CollectionMapper transformer = new CollectionMapper<PurchaseOrder, PurchaseOrderDTO>() {
 
 			@Override
-			PurchaseOrderLineItemsDTO transformCollection(PurchaseOrderLineItems from) {
-				List<PurchaseOrderDTO> parsedData = new ArrayList<PurchaseOrderDTO>();
-				for (PurchaseOrderDTO s : po) {
-					if (from.getPoLId() == s.getPoLId()) {
+			PurchaseOrderDTO transformCollection(PurchaseOrder from) {
+				List<PoDrugDTO> parsedData = new ArrayList<PoDrugDTO>();
+				for (PoDrugDTO s : po) {
+					if (from.getPoId() == s.getPoId()) {
 						parsedData.add(s);
 					}
 				}
 
-				return PurchaseOrderLineItemsDTO.builder().createdBy(from.getCreatedBy())
-						.createdDate(from.getCreatedDate()).poLId(from.getPoLId()).updatedBy(from.getUpdatedBy())
-						.updatedDate(from.getUpdatedDate()).poReference(from.getPoReference()).poLineItem(parsedData)
-						.poStatus(from.getPoStatus()).build();
+				return PurchaseOrderDTO.builder().createdBy(from.getCreatedBy()).createdDate(from.getCreatedDate())
+						.poId(from.getPoId()).updatedBy(from.getUpdatedBy()).updatedDate(from.getUpdatedDate())
+						.poReference(from.getPoReference()).poLineItem(parsedData).poStatus(from.getPoStatus()).build();
 			}
 		};
 		return transformer.transformCollection(list);

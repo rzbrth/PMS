@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.servlet.http.HttpServletResponse;
 import javax.transaction.Transactional;
 import javax.validation.Valid;
 
@@ -25,6 +26,7 @@ import com.rzb.pms.dto.DrugAboutToExpireStatus;
 import com.rzb.pms.dto.DrugDTO;
 import com.rzb.pms.dto.DrugDtoReqRes;
 import com.rzb.pms.dto.DrugSearchResponse;
+import com.rzb.pms.dto.ReportCategory;
 import com.rzb.pms.exception.CustomEntityNotFoundException;
 import com.rzb.pms.exception.CustomException;
 import com.rzb.pms.log.Log;
@@ -38,13 +40,16 @@ import com.rzb.pms.rsql.SearchCriteria;
 import com.rzb.pms.rsql.jpa.GenericSpecification;
 import com.rzb.pms.utils.BaseUtil;
 import com.rzb.pms.utils.CollectionMapper;
+import com.rzb.pms.utils.ReportUtills;
 
 /**
  * @author rajib.rath
+ * @param <K>
  *
  */
 @Service
-public class DrugService {
+@SuppressWarnings("unchecked")
+public class DrugService<K> {
 
 	@Autowired
 	private DrugRepository drugRepository;
@@ -59,7 +64,9 @@ public class DrugService {
 	private StockRepository stockRepository;
 
 	@Autowired
-	private static DistributerRepository repository;
+	private DistributerRepository repository;
+
+	private ReportUtills report = new ReportUtills();
 
 	private BooleanBuilder builder = new BooleanBuilder();
 
@@ -67,10 +74,12 @@ public class DrugService {
 	 * Return all drugs
 	 * 
 	 * @param pageable
+	 * @param isExported
 	 * @return List<DrugDTO>
 	 */
 
-	public List<DrugDTO> findAllDrugs(Pageable pageable) {
+	public List<K> findAllDrugs(Pageable pageable, Boolean isExported, String exportType,
+			HttpServletResponse response) {
 
 		Page<Drug> drugData = drugRepository.findAll(pageable);
 
@@ -79,7 +88,19 @@ public class DrugService {
 			throw new CustomException("No drug available", HttpStatus.NOT_FOUND);
 		}
 
-		return drugData.getContent().stream().map(x -> new DrugDTO(x)).collect(Collectors.toList());
+		if (isExported) {
+
+			try {
+				List<K> data = (List<K>) report.generateReport(response, exportType, ReportCategory.ALL_DRUG.toString(),
+						drugData.getContent().stream().map(x -> new DrugDTO(x)).collect(Collectors.toList()));
+				return data;
+			} catch (Exception e) {
+				throw new CustomException("Problem while exporting Drug info to :--<< (" + exportType
+						+ ")-->> \"+\"\\t\"+\"exception occured-->", e);
+			}
+		}
+
+		return (List<K>) drugData.getContent().stream().map(x -> new DrugDTO(x)).collect(Collectors.toList());
 	}
 
 	/**
@@ -133,7 +154,8 @@ public class DrugService {
 		}
 		logger.info("Total Drug Record as per Search Criteria" + drugs.getContent().size());
 
-		return new DrugSearchResponse(CollectionMapper.mapDrugToDrugAutoCompleteDTO(drugs.getContent(), stockRepository),
+		return new DrugSearchResponse(
+				CollectionMapper.mapDrugToDrugAutoCompleteDTO(drugs.getContent(), stockRepository),
 				drugs.getTotalElements());
 	}
 

@@ -17,10 +17,12 @@ public class PoUpdateDTO {
 	
 	private Integer distributerId;
 	
-	private Integer poDrugId;
+	//private Integer poDrugId;
 
 	private Integer poId;
 	
 	private String poStatus;
+	
+	
 
 }

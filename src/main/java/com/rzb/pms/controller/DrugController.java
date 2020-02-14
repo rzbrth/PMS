@@ -2,6 +2,7 @@ package com.rzb.pms.controller;
 
 import java.util.List;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
 import org.slf4j.Logger;
@@ -32,25 +33,31 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 
 @RestController
+@SuppressWarnings("unchecked")
 @RequestMapping(value = Endpoints.VERSION_1 + Endpoints.DRUG)
-public class DrugController {
+public class DrugController<K> {
 
+	@SuppressWarnings("rawtypes")
 	@Autowired
 	private DrugService drugService;
 
 	@Log
 	private Logger logger;
 
+	
 	@GetMapping(Endpoints.ALL_MEDECINE)
 	@ApiOperation("Get all drug data")
-	public ResponseEntity<ResponseSchema<List<DrugDTO>>> getAllDrugs(
-			@ApiParam(value = "Page Number, Page Size", required = true) @RequestParam(defaultValue = "0") Integer page,
-			@RequestParam(defaultValue = "10") Integer size) throws CustomException {
+	public ResponseEntity<K> getAllDrugs(
+			@ApiParam(value = "Page Number", required = true) @RequestParam(defaultValue = "0") Integer page,
+			@ApiParam(value = "Page Size", required = true) @RequestParam(defaultValue = "10") Integer size,
+			@ApiParam(value = "Export choice", required = true) @RequestParam(defaultValue = "false") Boolean isExported,
+			@ApiParam(value = "Export Type", required = true) @RequestParam(defaultValue = "csv") String exportType,
+			HttpServletResponse response) throws CustomException {
 		PageRequest pageRequest = PageRequest.of(page, size);
-		List<DrugDTO> data = drugService.findAllDrugs(pageRequest);
 
-		return new ResponseEntity<>(ResponseUtil.buildSuccessResponse(data, new ResponseSchema<List<DrugDTO>>()),
-				HttpStatus.OK);
+		return new ResponseEntity<>(ResponseUtil.buildSuccessResponse(
+				drugService.findAllDrugs(pageRequest, isExported, exportType, response),
+				new ResponseSchema<List<DrugDTO>>()), HttpStatus.OK);
 	}
 
 	@GetMapping(Endpoints.SEARCH_MEDECINE_BY_ID)

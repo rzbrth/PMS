@@ -1,6 +1,7 @@
 package com.rzb.pms.dto;
 
 import java.util.Date;
+import java.util.List;
 
 import com.rzb.pms.model.PurchaseOrder;
 
@@ -8,7 +9,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -17,36 +17,28 @@ public class PurchaseOrderDTO {
 
 	private Integer poId;
 
-	private String drugName;
+	private Date createdDate;
 
-	private String drugDescription;
+	private Date updatedDate;
 
-	private Double drugQuantity;
+	private String createdBy;
 
-	private float drugPrice;
-
-	private String drugId;
-
-	private Integer poLId;
-
-	private Integer distributerId;
+	private String updatedBy;
 	
-	// below  properties only to be used while creating stock from po directly
-	private Date expireDate;
+	private String poStatus;
 	
-	private String location;
-	
-//	private String invoiceReference;
+	private String poReference;
 
+
+	private List<PoDrugDTO> poLineItem;
 	
 	public PurchaseOrderDTO(PurchaseOrder data) {
-		this.distributerId = data.getDistributerId();
-		this.drugDescription = data.getDrugDescription();
-		this.drugId = data.getDrugId();
-		this.drugName = data.getDrugName();
-		this.drugPrice = data.getDrugPrice();
-		this.drugQuantity = data.getDrugQuantity();
+		
 		this.poId = data.getPoId();
-		this.poLId = data.getPoLId();
+		this.createdDate = data.getCreatedDate();
+		this.updatedDate = data.getUpdatedDate();
+		this.updatedBy = data.getUpdatedBy();
+		this.createdBy = data.getUpdatedBy();
 	}
+
 }

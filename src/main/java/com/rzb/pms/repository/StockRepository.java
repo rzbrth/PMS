@@ -21,6 +21,6 @@ public interface StockRepository extends JpaRepository<Stock, Integer>, CrudRepo
 	@Query(value = "select * from  stock where drug_id = ?1 and avl_qnty_whole >= ?2 order by expiry_date asc FETCH FIRST 1 ROWS ONLY", nativeQuery = true)
 	Stock findStockWithWholeQnty(String drugId, Double avlQntyWhole);
 
-	@Query(nativeQuery = true, value = "select avl_qnty_whole, location from stock where drug_id = ?1")
+	@Query(nativeQuery = true, value = "select avl_qnty_whole, location from stock where drug_id = ?1 and current_date < expiry_date order by expiry_date asc")
 	List<Object[]> findByDrugId(String drugId);
 }

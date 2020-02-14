@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class PoLienItemCreateDTO {
+public class PoCreateDTO {
 
 	private List<PoLineItemAddDTO> lineItem;
 
