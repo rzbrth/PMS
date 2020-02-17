@@ -1,5 +1,10 @@
 package com.rzb.pms.utils;
 
+import java.time.LocalDate;
+import java.time.Period;
+import java.time.ZoneId;
+import java.util.Date;
+
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.springframework.data.domain.Sort;
@@ -7,6 +12,7 @@ import org.springframework.data.domain.Sort.Direction;
 import org.springframework.http.HttpStatus;
 
 import com.rzb.pms.dto.DrugType;
+import com.rzb.pms.dto.ExpireStatus;
 import com.rzb.pms.dto.ReferenceType;
 import com.rzb.pms.exception.CustomException;
 import com.rzb.pms.log.Log;
@@ -190,7 +196,7 @@ public class BaseUtil {
 
 	}
 
-	public static String getRandomPoReference(String type) {
+	public static String getRandomReference(String type) {
 
 		if (ReferenceType.PO.toString().equalsIgnoreCase(type)) {
 			return "PO-" + RandomStringUtils.randomAlphabetic(4);
@@ -242,5 +248,68 @@ public class BaseUtil {
 			return drugForm;
 		}
 
+	}
+
+	public static String remainingExpireTime(Date expiryDate) {
+
+		LocalDate localDate = expiryDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+		LocalDate expDate = LocalDate.of(localDate.getYear(), localDate.getMonthValue(), localDate.getDayOfMonth());
+		LocalDate now = LocalDate.now();
+		Period diff = Period.between(expDate, now);
+
+		return "Expiring in" + ": " + diff.getYears() + " " + "Years, " + diff.getMonths() + ", Months, "
+				+ diff.getDays();
+
+	}
+
+	public static String getExpireStatus(Date expiryDate) {
+
+		String status = null;
+		if (expiryDate.before(new Date())) {
+			status = ExpireStatus.EXPIRED.toString();
+		} else if (expiryDate.after(new Date())) {
+			status = ExpireStatus.ABOUT_TO_EXPIRE.toString();
+		}
+		return status;
+	}
+
+	@SuppressWarnings("unused")
+	public static boolean isNullOrZero(final Object obj) {
+
+		if (null == obj)
+			return true;
+
+		if (obj instanceof Integer) {
+			Integer i = (Integer) obj;
+			return (i == 0);
+		}
+
+		if (obj instanceof Long) {
+			Long l = (Long) obj;
+			return (l == 0);
+		}
+		if (obj instanceof Float) {
+			Float l = (Float) obj;
+			return (l == 0);
+		}
+
+		if (obj instanceof String) {
+			String str = (String) obj;
+			if (str != null && !str.isEmpty()) {
+				return false;
+			} else {
+				return true;
+			}
+
+		}
+		if (obj instanceof Date) {
+			Date date = (Date) obj;
+			if (date == null) {
+				return true;
+			} else {
+				return false;
+			}
+		}
+		return false;
 	}
 }

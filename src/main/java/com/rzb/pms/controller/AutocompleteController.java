@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.rzb.pms.config.ResponseSchema;
 import com.rzb.pms.dto.DrugSearchResponse;
 import com.rzb.pms.exception.CustomEntityNotFoundException;
+import com.rzb.pms.exception.CustomException;
 import com.rzb.pms.log.Log;
 import com.rzb.pms.service.DrugService;
 import com.rzb.pms.utils.BaseUtil;
@@ -27,6 +28,7 @@ import io.swagger.annotations.ApiParam;
 @RequestMapping(Endpoints.VERSION_1 + Endpoints.AUTOCOMPLETE)
 public class AutocompleteController {
 
+	@SuppressWarnings("rawtypes")
 	@Autowired
 	private DrugService drugService;
 
@@ -37,13 +39,17 @@ public class AutocompleteController {
 	@ApiOperation("Search medecine by genericName, brandName, company, composition, location")
 	public ResponseEntity<ResponseSchema<DrugSearchResponse>> getAllDrugs(
 			@ApiParam(value = "Search Param", required = true, allowableValues = "brandName=lk=COSACOL, genericName=lk=aminosalicylic acid, company=lk=CIPLA, composition=lk=Mesalamine") @RequestParam(value = "search") String search,
-			@RequestParam(defaultValue = "0", required = false) Integer page,
+			@RequestParam(defaultValue = "1", required = false) Integer page,
 			@RequestParam(defaultValue = "10", required = false) Integer size,
 			@RequestParam(defaultValue = "mrp:DESC", required = false) String sort)
 			throws CustomEntityNotFoundException {
 		logger.info("Search Parameter: " + search);
 		logger.info("Sort Parameter: " + sort);
 
+		if (page == 0) {
+			throw new CustomException("Page number can not be 0", HttpStatus.BAD_REQUEST);
+
+		}
 		Sort sortCriteria = BaseUtil.getSortObject(sort);
 		PageRequest pageRequest = PageRequest.of(page - 1, size, sortCriteria);
 		DrugSearchResponse response = drugService.search(search, pageRequest);

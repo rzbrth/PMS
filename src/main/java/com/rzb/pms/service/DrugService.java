@@ -1,12 +1,13 @@
 package com.rzb.pms.service;
 
-import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
 import javax.servlet.http.HttpServletResponse;
 import javax.transaction.Transactional;
 import javax.validation.Valid;
@@ -16,13 +17,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import com.querydsl.core.BooleanBuilder;
-import com.rzb.pms.dto.DrugAboutToExpireStatus;
+import com.rzb.pms.dto.AuditType;
 import com.rzb.pms.dto.DrugDTO;
 import com.rzb.pms.dto.DrugDtoReqRes;
 import com.rzb.pms.dto.DrugSearchResponse;
@@ -30,9 +30,10 @@ import com.rzb.pms.dto.ReportCategory;
 import com.rzb.pms.exception.CustomEntityNotFoundException;
 import com.rzb.pms.exception.CustomException;
 import com.rzb.pms.log.Log;
+import com.rzb.pms.model.Audit;
 import com.rzb.pms.model.Drug;
 import com.rzb.pms.model.QDrug;
-import com.rzb.pms.model.Stock;
+import com.rzb.pms.repository.AuditRepository;
 import com.rzb.pms.repository.DistributerRepository;
 import com.rzb.pms.repository.DrugRepository;
 import com.rzb.pms.repository.StockRepository;
@@ -48,7 +49,7 @@ import com.rzb.pms.utils.ReportUtills;
  *
  */
 @Service
-@SuppressWarnings("unchecked")
+@SuppressWarnings(value = { "unchecked", "unused", "rawtypes" })
 public class DrugService<K> {
 
 	@Autowired
@@ -65,6 +66,9 @@ public class DrugService<K> {
 
 	@Autowired
 	private DistributerRepository repository;
+
+	@Autowired
+	private AuditRepository auditRepo;
 
 	private ReportUtills report = new ReportUtills();
 
@@ -173,19 +177,27 @@ public class DrugService<K> {
 			throw new CustomException("Drug information can't be empty", HttpStatus.NOT_ACCEPTABLE);
 		}
 		try {
-			em.createNativeQuery("INSERT INTO drug (drug_id, brand_name, company, composition,"
-					+ " drug_form, expiry_date, generic_id, generic_name, mrp, packing, unit_price)"
-					+ " VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
+			Query q = em
+					.createNativeQuery("INSERT INTO drug (drug_id, brand_name, company, composition,"
+							+ " drug_form, expiry_date, generic_id, generic_name, mrp, packing, unit_price)"
+							+ " VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
 					.setParameter(1, "TD" + em.createNativeQuery("select nextval ('drug_id_seq')").getSingleResult())
 					.setParameter(2, data.getBrandName()).setParameter(3, data.getCompany())
 					.setParameter(4, data.getComposition()).setParameter(5, data.getDrugForm())
 					.setParameter(6, data.getExpiryDate()).setParameter(7, data.getGenericId())
 					.setParameter(8, data.getGenericName()).setParameter(9, data.getMrp())
-					.setParameter(10, data.getPacking()).setParameter(11, data.getMrp() / data.getPacking())
-					.executeUpdate();
+					.setParameter(10, data.getPacking()).setParameter(11, data.getMrp() / data.getPacking());
+			q.executeUpdate();
+			String drugId = (String) q.getSingleResult();
+
+			try {
+				auditRepo.save(Audit.builder().auditType(AuditType.DRUG_CREATED.toString()).createdBy("")
+						.createdDate(new Date()).drugId(drugId).build());
+			} catch (Exception e) {
+				throw new CustomException("Problem while auditing drug info", e);
+			}
 			return "Drug info saved successfully";
 		} catch (Exception e) {
-			logger.error("Problem while adding drug, Please try again", e);
 			throw new CustomException("Drug information can't be empty", e);
 		}
 
@@ -197,22 +209,22 @@ public class DrugService<K> {
 	 * @param genericId
 	 * @return
 	 */
-	public List<DrugDTO> getDrugByGenericId(String genericId, Pageable page) {
-		if (genericId == null) {
-			logger.error("Generic Id can't be null", HttpStatus.BAD_REQUEST);
-			throw new CustomException("Generic Id can't be null", HttpStatus.BAD_REQUEST);
-		}
-		final QDrug drugs = QDrug.drug;
-		builder.and(drugs.genericId.eq(genericId));
-		Page<Drug> data = drugRepository.findAll(builder.getValue(), page);
-		if (data == null) {
-			logger.error("Drug Details not found for the given generic Id", HttpStatus.NOT_FOUND);
-			throw new CustomEntityNotFoundException(Drug.class, "genericId", genericId);
-		}
-
-		return CollectionMapper.mapDrugDtoDrugDTO(data.getContent(), stockRepository);
-
-	}
+	/*
+	 * public List<DrugDTO> getDrugByGenericId(String genericId, Pageable page) { if
+	 * (genericId == null) { logger.error("Generic Id can't be null",
+	 * HttpStatus.BAD_REQUEST); throw new
+	 * CustomException("Generic Id can't be null", HttpStatus.BAD_REQUEST); } final
+	 * QDrug drugs = QDrug.drug; builder.and(drugs.genericId.eq(genericId));
+	 * Page<Drug> data = drugRepository.findAll(builder.getValue(), page); if (data
+	 * == null) { logger.error("Drug Details not found for the given generic Id",
+	 * HttpStatus.NOT_FOUND); throw new CustomEntityNotFoundException(Drug.class,
+	 * "genericId", genericId); }
+	 * 
+	 * return CollectionMapper.mapDrugDtoDrugDTO(data.getContent(),
+	 * stockRepository);
+	 * 
+	 * }
+	 */
 
 	/**
 	 * return drugs by genericName
@@ -282,29 +294,24 @@ public class DrugService<K> {
 			throw new CustomEntityNotFoundException(Drug.class, "drugId", drugId);
 		}
 		try {
-			drugRepository.save(Drug.builder().brandName(drugData.getBrandName()).company(drugData.getCompany())
+			Drug record = Drug.builder().brandName(drugData.getBrandName()).company(drugData.getCompany())
 					.composition(drugData.getComposition()).drugForm(drugData.getDrugForm())
 					.expiryDate(drugData.getExpiryDate()).genericId(drugData.getGenericId())
 					.genericName(drugData.getGenericName()).mrp(drugData.getMrp()).packing(drugData.getPacking())
-					.build());
-
+					.build();
+			drugRepository.saveAndFlush(record);
+			try {
+				auditRepo.save(Audit.builder().auditType(AuditType.DRUG_UPDATED.toString()).updatedBy("")
+						.updatedDate(new Date()).drugId(record.getDrugId()).build());
+			} catch (Exception e) {
+				throw new CustomException("Problem while auditing drug info", e);
+			}
 			return "Drug info updated successfully";
 		} catch (Exception e) {
 			logger.error("Problem while adding drug, Please try again", e.getCause());
 			throw new CustomException("Drug information can't be empty", e.getCause());
 		}
 
-	}
-
-	public List<DrugAboutToExpireStatus> checkForExpiry(String sort) {
-
-		List<DrugAboutToExpireStatus> result = new ArrayList<DrugAboutToExpireStatus>();
-		for (Stock stock : stockRepository.findAll(Sort.by(Sort.Direction.DESC, "expiry_date"))) {
-			result.add(DrugAboutToExpireStatus.buildWithStockInfo(stock,
-					drugRepository.findById(stock.getDrugId()).get().getBrandName(),
-					repository.findById(stock.getDistributerId()).get().getName()));
-		}
-		return result;
 	}
 
 }

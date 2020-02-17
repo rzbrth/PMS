@@ -27,7 +27,7 @@ public class PurchaseOrderDTO {
 	
 	private String poStatus;
 	
-	private String poReference;
+	private String referenceNumber;
 
 
 	private List<PoDrugDTO> poLineItem;

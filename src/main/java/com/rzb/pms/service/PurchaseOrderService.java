@@ -16,6 +16,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import com.rzb.pms.dto.AuditType;
 import com.rzb.pms.dto.OrderStatus;
 import com.rzb.pms.dto.PoCreateDTO;
 import com.rzb.pms.dto.PoDrugDTO;
@@ -28,10 +29,12 @@ import com.rzb.pms.dto.ReferenceType;
 import com.rzb.pms.exception.CustomEntityNotFoundException;
 import com.rzb.pms.exception.CustomException;
 import com.rzb.pms.log.Log;
-import com.rzb.pms.model.PoDrug;
+import com.rzb.pms.model.Audit;
+import com.rzb.pms.model.PoLineItems;
 import com.rzb.pms.model.PurchaseOrder;
 import com.rzb.pms.model.QPurchaseOrder;
-import com.rzb.pms.repository.PoDrugRepository;
+import com.rzb.pms.repository.AuditRepository;
+import com.rzb.pms.repository.PoLineItemsRepository;
 import com.rzb.pms.repository.PurchaseOrderRepository;
 import com.rzb.pms.utils.BaseUtil;
 import com.rzb.pms.utils.CollectionMapper;
@@ -49,7 +52,10 @@ public class PurchaseOrderService {
 	private EntityManager em;
 
 	@Autowired
-	private PoDrugRepository poDrugRepository;
+	private PoLineItemsRepository poLineItemsRepository;
+
+	@Autowired
+	private AuditRepository auditRepo;
 
 	/**
 	 * This is used to create Purchase Order
@@ -65,19 +71,25 @@ public class PurchaseOrderService {
 		try {
 			/*
 			 * save data to PurchaseOrder table and gate id and against that PurchaseOrder
-			 * id as fk save drug request to PoDrug.
+			 * id as fk save drug request to PoLineItems.
 			 */
 			PurchaseOrder orderData = PurchaseOrder.builder().createdBy("").createdDate(new Date())
-					.poReference(BaseUtil.getRandomPoReference(ReferenceType.PO.toString()))
-					.poStatus(OrderStatus.PENDING.toString()).build();
+					.poReference(BaseUtil.getRandomReference(ReferenceType.PO.toString()))
+					.poStatus(OrderStatus.PENDING.toString()).distributerId(data.getDistributerId()).build();
 			em.persist(orderData);
 			em.flush();
-
+			try {
+				auditRepo.save(Audit.builder().auditType(AuditType.PO_CREATED.toString()).createdBy("")
+						.createdDate(new Date()).poId(orderData.getPoId()).build());
+			} catch (Exception e) {
+				throw new CustomException("Problem while auditing PO creation", e);
+			}
 			for (PoLineItemAddDTO d : data.getLineItem()) {
 
-				poDrugRepository.save(PoDrug.builder().drugDescription(d.getDrugDescription()).drugName(d.getDrugName())
-						.drugPrice(d.getDrugPrice()).drugQuantity(d.getDrugQuantity()).poId(orderData.getPoId())
-						.drugId(d.getDrugId()).distributerId(data.getDistributerId()).build());
+				poLineItemsRepository
+						.save(PoLineItems.builder().drugDescription(d.getDrugDescription()).drugName(d.getDrugName())
+								.drugPrice(d.getDrugPrice()).drugQuantity(d.getDrugQuantity()).poId(orderData.getPoId())
+								.drugId(d.getDrugId()).distributerId(data.getDistributerId()).build());
 			}
 			return "PO created Successfully";
 		} catch (Exception e) {
@@ -103,12 +115,18 @@ public class PurchaseOrderService {
 			em.createNativeQuery(
 					"UPDATE purchase_order SET updated_by = ?, updated_date = ?, po_status = ?, distributer_id = ? WHERE po_id = ?")
 					.setParameter(1, "").setParameter(2, new Date()).setParameter(3, data.getPoStatus())
-					.setParameter(4, data.getDistributerId())
-					.setParameter(5, data.getPoId()).executeUpdate();
+					.setParameter(4, data.getDistributerId()).setParameter(5, data.getPoId()).executeUpdate();
+
+			try {
+				auditRepo.save(Audit.builder().auditType(AuditType.PO_UPDATED.toString()).updatedBy("")
+						.updatedDate(new Date()).poId(data.getPoId()).build());
+			} catch (Exception e) {
+				throw new CustomException("Problem while auditing PO updation", e);
+			}
 
 			for (PoLineItemUpdateDTO item : data.getUpdateLineItems()) {
 
-				em.createNativeQuery("UPDATE po_drug SET drug_description = ?, drug_id = ?, drug_name = ?,"
+				em.createNativeQuery("UPDATE po_line_items SET drug_description = ?, drug_id = ?, drug_name = ?,"
 						+ " drug_price = ?, drug_quantity = ?, distributer_id = ? WHERE po_drug_id = ?")
 						.setParameter(1, item.getDrugDescription()).setParameter(2, item.getDrugId())
 						.setParameter(3, item.getDrugName()).setParameter(4, item.getDrugPrice())
@@ -145,7 +163,7 @@ public class PurchaseOrderService {
 		List<PurchaseOrderResponse> response = new ArrayList<PurchaseOrderResponse>();
 		List<PoDrugDTO> res = new ArrayList<PoDrugDTO>();
 		for (PurchaseOrder data : orderInfo) {
-			for (PoDrug st : data.getPodrug()) {
+			for (PoLineItems st : data.getPodrug()) {
 
 				PoDrugDTO result = PoDrugDTO.builder().distributerId(st.getDistributerId())
 						.drugDescription(st.getDrugDescription()).drugId(st.getDrugId()).drugName(st.getDrugName())
@@ -181,7 +199,7 @@ public class PurchaseOrderService {
 
 		return PurchaseOrderDTO.builder().createdBy(order.getCreatedBy()).createdDate(order.getCreatedDate())
 				.poId(order.getPoId()).updatedBy(order.getUpdatedBy()).updatedDate(order.getUpdatedDate())
-				.poStatus(order.getPoStatus()).poReference(order.getPoReference())
+				.poStatus(order.getPoStatus())
 				.poLineItem(order.getPodrug().stream().map(x -> new PoDrugDTO(x)).collect(Collectors.toList())).build();
 	}
 
@@ -198,6 +216,13 @@ public class PurchaseOrderService {
 			if (poStatus.equals(OrderStatus.PENDING.toString())) {
 
 				repository.deleteById(poId);
+
+				try {
+					auditRepo.save(Audit.builder().auditType(AuditType.PO_DELETED.toString()).updatedBy("")
+							.updatedDate(new Date()).poId(poId).build());
+				} catch (Exception e) {
+					throw new CustomException("Problem while auditing PO deletion", e);
+				}
 			}
 
 			return "PO deleted successfully";

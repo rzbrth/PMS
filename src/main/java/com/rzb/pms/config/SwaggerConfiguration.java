@@ -28,21 +28,21 @@ public class SwaggerConfiguration implements WebMvcConfigurer {
 		// @formatter:on
 	}
 
-//	private ApiInfo apiInfo() {
-//		// @formatter:off
-//		return new ApiInfoBuilder().title("NextGen-Pharma System")
-//				.description("NextGen-Pharma API's for UI Integration").license("Apache License Version 1.0")
-//				.licenseUrl("").version("V 1.0").contact(DEFAULT_CONTACT).build();
-//		// @formatter:on
-//	}
-
 	private ApiInfo apiInfo() {
 		// @formatter:off
-		return new ApiInfoBuilder().title("OpenSource-Pharma System")
-				.description("OpenSource-Pharma API's for UI Integration").license("Apache License Version 1.0")
+		return new ApiInfoBuilder().title("NextGen-Pharma System")
+				.description("NextGen-Pharma API's for UI Integration").license("Apache License Version 1.0")
 				.licenseUrl("").version("V 1.0").contact(DEFAULT_CONTACT).build();
 		// @formatter:on
 	}
+
+//	private ApiInfo apiInfo() {
+//		// @formatter:off
+//		return new ApiInfoBuilder().title("OpenSource-Pharma System")
+//				.description("OpenSource-Pharma API's for UI Integration").license("Apache License Version 1.0")
+//				.licenseUrl("").version("V 1.0").contact(DEFAULT_CONTACT).build();
+//		// @formatter:on
+//	}
 	@Override
 	public void addResourceHandlers(ResourceHandlerRegistry registry) {
 

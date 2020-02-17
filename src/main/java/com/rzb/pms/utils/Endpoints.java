@@ -44,7 +44,10 @@ public class Endpoints {
 	public static final String ADD_STOCK_FROM_PO = "/po";
 	
 	public static final String UPDATE_STOCK = "/updateStock";
+	
+	public static final String STOCK_INFO = "/all-OR-ONe-StockInfo";
 
+	public static final String STOCK_EXPIRE ="/expireCheck";
 	//Purchase Order
 	public static final String PO = "/po";
 	

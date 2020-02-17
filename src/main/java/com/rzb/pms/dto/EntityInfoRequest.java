@@ -1,8 +1,8 @@
 package com.rzb.pms.dto;
 
-public enum ReferenceType {
+public enum EntityInfoRequest {
 
-	PO, SELL, STOCK;
+	FIND_ALL, FIND_ONE;
 
 	@Override
 	public String toString() {

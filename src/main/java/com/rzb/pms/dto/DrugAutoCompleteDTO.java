@@ -27,7 +27,7 @@ public class DrugAutoCompleteDTO {
 
 	private Float unitPrice;
 
-	private String genericId;
+	//private String genericId;
 
 	private String drugForm;
 	

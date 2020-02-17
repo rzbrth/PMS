@@ -28,6 +28,8 @@ public class Stock {
 	private Integer stockId;
 
 	private String drugId;
+	
+	private String drugName;
 
 	private Date stockCreatedAt;
 
@@ -43,7 +45,7 @@ public class Stock {
 
 	private Float unitPrice;
 
-	private String genericId;
+	//private String genericId;
 
 	private String location;
 
@@ -58,8 +60,6 @@ public class Stock {
 	private String stockType;
 
 	private String invoiceReference;
-
-	private String poReferenseNumber;
 
 	private Integer poLId;
 	

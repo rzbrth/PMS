@@ -130,7 +130,6 @@ public class ReportUtills<K> {
 			case "EXCEL": {
 				try {
 					Workbook workbook = new XSSFWorkbook(); // new HSSFWorkbook() for generating `.xls` file
-
 					/*
 					 * CreationHelper helps us create instances of various things like DataFormat,
 					 * Hyperlink, RichTextString etc, in a format (HSSF, XSSF) independent way
@@ -153,9 +152,9 @@ public class ReportUtills<K> {
 					Row headerRow = sheet.createRow(0);
 
 					// adding header to csv
-					String[] header = { "Stock Id", "Avl Qty Whole", "Avl Qty Trimmed", "Packing",
-							"Drug Id", "Expiry Date", "Mrp", "Location", "Created By", "Created Date", "Updated By",
-							"Updated Date", "Invoice Number", "Distributer Id", "Po Line Item Id", "Po Id" };
+					String[] header = { "Stock Id", "Avl Qty Whole", "Avl Qty Trimmed", "Packing", "Drug Id",
+							"Expiry Date", "Mrp", "Location", "Created By", "Created Date", "Updated By",
+							"Updated Date", "Invoice Number", "Distributer Id", "Po Id", "Expiry Status" };
 					// Create cells
 					for (int i = 0; i < header.length; i++) {
 						Cell cell = headerRow.createCell(i);
@@ -168,22 +167,32 @@ public class ReportUtills<K> {
 						StockResponseDto z = (StockResponseDto) req.get(i);
 
 						Row row = sheet.createRow(rowNum++);
-						row.createCell(0).setCellValue(z.getStockId());
-						row.createCell(1).setCellValue(z.getAvlQntyWhole());
-						row.createCell(2).setCellValue(z.getAvlQntyTrimmed());
-						row.createCell(3).setCellValue(z.getDrugId());
-						row.createCell(4).setCellValue(z.getExpiryDate());
-						row.createCell(5).setCellValue(z.getMrp());
-						row.createCell(6).setCellValue(z.getLocation());
-						row.createCell(7).setCellValue(z.getCreateddBy());
-						row.createCell(8).setCellValue(z.getStockCreatedAt());
-						row.createCell(9).setCellValue(z.getUpdatedBy());
-						row.createCell(10).setCellValue(z.getStockUpdatedAt());
-						row.createCell(11).setCellValue(z.getInvoiceReference());
-						row.createCell(12).setCellValue(z.getDistributerId());
-						//row.createCell(13).setCellValue(z.getPoReferenseNumber());
-						//row.createCell(14).setCellValue(z.get);
-						
+						row.createCell(0).setCellValue(BaseUtil.isNullOrZero(z.getStockId()) ? 0 : z.getStockId());
+						row.createCell(1)
+								.setCellValue(BaseUtil.isNullOrZero(z.getAvlQntyWhole()) ? 0 : z.getAvlQntyWhole());
+						row.createCell(2)
+								.setCellValue(BaseUtil.isNullOrZero(z.getAvlQntyTrimmed()) ? 0 : z.getAvlQntyTrimmed());
+						row.createCell(3).setCellValue(BaseUtil.isNullOrZero(z.getPacking()) ? 0 : z.getPacking());
+						row.createCell(4).setCellValue(BaseUtil.isNullOrZero(z.getDrugId()) ? null : z.getDrugId());
+						row.createCell(5)
+								.setCellValue(BaseUtil.isNullOrZero(z.getExpireDate()) ? null : z.getExpireDate());
+						row.createCell(6).setCellValue(BaseUtil.isNullOrZero(z.getMrp()) ? 0 : z.getMrp());
+						row.createCell(7).setCellValue(BaseUtil.isNullOrZero(z.getLocation()) ? null : z.getLocation());
+						row.createCell(8)
+								.setCellValue(BaseUtil.isNullOrZero(z.getCreateddBy()) ? null : z.getCreateddBy());
+						row.createCell(9).setCellValue(
+								BaseUtil.isNullOrZero(z.getStockCreatedAt()) ? null : z.getStockCreatedAt());
+						row.createCell(10)
+								.setCellValue(BaseUtil.isNullOrZero(z.getUpdatedBy()) ? null : z.getUpdatedBy());
+						row.createCell(11).setCellValue(
+								BaseUtil.isNullOrZero(z.getStockUpdatedAt()) ? null : z.getStockUpdatedAt());
+						row.createCell(12).setCellValue(
+								BaseUtil.isNullOrZero(z.getInvoiceReference()) ? null : z.getInvoiceReference());
+						row.createCell(13)
+								.setCellValue(BaseUtil.isNullOrZero(z.getDistributerId()) ? 0 : z.getDistributerId());
+						row.createCell(14).setCellValue(BaseUtil.isNullOrZero(z.getPoId()) ? 0 : z.getPoId());
+						row.createCell(15).setCellValue(BaseUtil.isNullOrZero(z.getExpireStatus()) ? null : z.getExpireStatus());
+
 
 					}
 

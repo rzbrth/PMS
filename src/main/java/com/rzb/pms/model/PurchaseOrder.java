@@ -41,14 +41,13 @@ public class PurchaseOrder {
 	private String poStatus;
 
 	private String poReference;
-	
+
 	private Integer distributerId;
 
-
 //	@OneToMany(mappedBy = "orders")
-//	private List<PoDrug> podrug;
+//	private List<PoLineItems> podrug;
 	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	@JoinColumn(name = "poId", insertable = false, updatable = false)
-	private List<PoDrug> podrug;
+	private List<PoLineItems> podrug;
 
 }

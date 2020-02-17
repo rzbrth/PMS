@@ -15,7 +15,7 @@ public class StockDirectRequestDTO {
 
 	private String drugId;
 
-	private String genericId;
+	//private String genericId;
 
 	private Integer distributerId;
 
@@ -31,6 +31,6 @@ public class StockDirectRequestDTO {
 
 	private Double avlQntyWhole;
 
-	private Double avlQntyTrimmed;
+	//private Double avlQntyTrimmed;
 	
 }

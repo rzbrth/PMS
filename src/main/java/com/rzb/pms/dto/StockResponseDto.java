@@ -2,7 +2,10 @@ package com.rzb.pms.dto;
 
 import java.util.Date;
 
+import org.apache.commons.lang3.time.DateFormatUtils;
+
 import com.rzb.pms.model.Stock;
+import com.rzb.pms.utils.BaseUtil;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -33,11 +36,15 @@ public class StockResponseDto {
 
 	private Float unitPrice;
 
-	//private String genericId;
+	// private String genericId;
 
 	private String location;
 
-	private Date expiryDate;
+	private String expireStatus;
+
+	private String expireDate;
+
+	private String expireTimeLeft;
 
 	private Double avlQntyWhole;
 
@@ -49,14 +56,14 @@ public class StockResponseDto {
 
 	private String invoiceReference;
 
-	private String poReferenseNumber;
 	private Integer poId;
-	
+
 	private Integer poLid;
-	
-	
+
+	private String drugName;
+
 	public StockResponseDto(Stock data) {
-		
+
 		this.avlQntyTrimmed = data.getAvlQntyTrimmed();
 		this.avlQntyWhole = data.getAvlQntyWhole();
 		this.createddBy = data.getCreateddBy();
@@ -66,13 +73,15 @@ public class StockResponseDto {
 		this.location = data.getLocation();
 		this.mrp = data.getMrp();
 		this.packing = data.getPacking();
-		this.poReferenseNumber = data.getPoReferenseNumber();
 		this.stockCreatedAt = data.getStockCreatedAt();
 		this.stockId = data.getStockId();
 		this.stockType = data.getStockType();
 		this.stockUpdatedAt = data.getStockUpdatedAt();
 		this.unitPrice = data.getUnitPrice();
 		this.updatedBy = data.getUpdatedBy();
-		
+		this.expireDate = DateFormatUtils.format(data.getExpiryDate(), "dd-MM-yyyy HH:mm:SS");
+		this.expireStatus = BaseUtil.getExpireStatus(data.getExpiryDate());
+		this.expireTimeLeft = BaseUtil.remainingExpireTime(data.getExpiryDate());
+		this.drugName = data.getDrugName();
 	}
 }

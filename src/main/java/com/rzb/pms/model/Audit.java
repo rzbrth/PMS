@@ -24,25 +24,23 @@ public class Audit {
 	private Integer auditId;
 
 	private String auditType;
-	
+
 	private Date createdDate;
 
 	private String createdBy;
-	
-	private String updatedDate;
-	
+
+	private Date updatedDate;
+
 	private String updatedBy;
 
 	private Integer customerId;
-	
-	private Integer dispenseId;
-	
-	private Integer stockId;
-	
-	private Integer poId;
-	
-	
 
- 
+	private Integer dispenseId;
+
+	private Integer stockId;
+
+	private Integer poId;
+
+	private String drugId;
 
 }

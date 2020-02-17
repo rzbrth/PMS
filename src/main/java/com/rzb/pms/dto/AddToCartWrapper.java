@@ -9,7 +9,19 @@ public class AddToCartWrapper {
 
 	private List<DrugDispenseDTO> item;
 
-	private OtherInfoDTO info; 	
-	
-	
+	private String customerName;
+
+	private String customerMobileNumber;
+
+	private String customerEmail;
+
+	private String paymentMode;
+
+	private Boolean isInvoiceRequired;
+
+	private float discount;
+
+	private String invoiceType;
+	// private OtherInfoDTO info;
+
 }

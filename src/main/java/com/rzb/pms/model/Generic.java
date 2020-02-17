@@ -57,7 +57,7 @@ public class Generic {
 //	@JsonIgnoreProperties("genericPharma")
 //	private List<Drug> drugs = new ArrayList<Drug>();
 
-	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-	@JoinColumn(name = "genericId")
-	private List<Drug> drugs = new ArrayList<Drug>();
+//	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+//	@JoinColumn(name = "genericId")
+//	private List<Drug> drugs = new ArrayList<Drug>();
 }

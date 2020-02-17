@@ -69,7 +69,7 @@ public abstract class CollectionMapper<FROM, TO> {
 
 				return PurchaseOrderDTO.builder().createdBy(from.getCreatedBy()).createdDate(from.getCreatedDate())
 						.poId(from.getPoId()).updatedBy(from.getUpdatedBy()).updatedDate(from.getUpdatedDate())
-						.poReference(from.getPoReference()).poLineItem(parsedData).poStatus(from.getPoStatus()).build();
+						.referenceNumber(from.getPoReference()).poLineItem(parsedData).poStatus(from.getPoStatus()).build();
 			}
 		};
 		return transformer.transformCollection(list);
@@ -90,13 +90,14 @@ public abstract class CollectionMapper<FROM, TO> {
 				if (!stockInfo.isEmpty()) {
 					for (Object x[] : stockInfo) {
 
-						data.add(StockProjPre.builder().location((String) x[1]).avlQntyWhole((Double) x[0]).build());
+						data.add(StockProjPre.builder().stockId((Integer) x[0]).location((String) x[2])
+								.avlQntyWhole((Double) x[1]).build());
 					}
 
 				}
 				for (StockProjPre d : data) {
 
-					result.add(StockProjPost.builder()
+					result.add(StockProjPost.builder().stockId(d.getStockId())
 							.avlQntyWhole(d.getAvlQntyWhole() % 1 != 0
 									? BaseUtil.findQntyInWord(d.getAvlQntyWhole(), from.getDrugForm())
 
@@ -109,8 +110,9 @@ public abstract class CollectionMapper<FROM, TO> {
 
 				return DrugAutoCompleteDTO.builder().brandName(from.getBrandName()).company(from.getCompany())
 						.composition(from.getComposition()).drugForm(from.getDrugForm()).drugId(from.getDrugId())
-						.genericId(from.getGenericId()).genericName(from.getGenericName()).mrp(from.getMrp())
-						.packing(from.getPacking()).stockInfo(result).build();
+						// .genericId(from.getGenericId())
+						.genericName(from.getGenericName()).mrp(from.getMrp()).packing(from.getPacking())
+						.stockInfo(result).build();
 			}
 
 		};
