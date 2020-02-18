@@ -29,4 +29,7 @@ public interface StockRepository extends CrudRepository<Stock, Integer>, JpaRepo
 
 	@Query(nativeQuery = true, value = "select stock_Id, drugName from stock order by expiry_date asc FETCH FIRST 4 ROWS ONLY")
 	List<Stock> findTopDrugAboutToExpire();
+
+	@Query(nativeQuery = true, value = "select * from stock where po_id = ?1")
+	List<Stock> findByPoId(Integer poId);
 }

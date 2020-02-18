@@ -10,6 +10,7 @@ import com.rzb.pms.dto.DrugDTO;
 import com.rzb.pms.dto.DrugType;
 import com.rzb.pms.dto.PoDrugDTO;
 import com.rzb.pms.dto.PurchaseOrderDTO;
+import com.rzb.pms.dto.PurchaseOrderResponse;
 import com.rzb.pms.dto.StockProjPost;
 import com.rzb.pms.dto.StockProjPre;
 import com.rzb.pms.model.Drug;
@@ -53,27 +54,28 @@ public abstract class CollectionMapper<FROM, TO> {
 		return transformer.transformCollection(list);
 	}
 
-	public static List<PurchaseOrderDTO> mapPurchaseOrderToPurchaseOrderDTO(List<PurchaseOrder> list,
-			List<PoDrugDTO> po) {
+//	public static List<PurchaseOrderResponse> mapPurchaseOrderToPurchaseOrderResponse(List<PurchaseOrder> list,
+//			List<PurchaseOrderResponse> po) {
+//
+//		CollectionMapper transformer = new CollectionMapper<PurchaseOrder, PurchaseOrderDTO>() {
+//
+//			@Override
+//			PurchaseOrderResponse transformCollection(PurchaseOrder from) {
+//				List<PoDrugDTO> parsedData = new ArrayList<PoDrugDTO>();
+//				for (PoDrugDTO s : po) {
+//					if (from.getPoId() == s.getPoId()) {
+//						parsedData.add(s);
+//					}
+//				}
+//
+//				return PurchaseOrderDTO.builder().createdBy(from.getCreatedBy()).createdDate(from.getCreatedDate())
+//						.poId(from.getPoId()).updatedBy(from.getUpdatedBy()).updatedDate(from.getUpdatedDate())
+//						.referenceNumber(from.getPoReference()).poLineItem(parsedData).poStatus(from.getPoStatus()).build();
+//			}
+//		};
+//		return transformer.transformCollection(list);
+//	}
 
-		CollectionMapper transformer = new CollectionMapper<PurchaseOrder, PurchaseOrderDTO>() {
-
-			@Override
-			PurchaseOrderDTO transformCollection(PurchaseOrder from) {
-				List<PoDrugDTO> parsedData = new ArrayList<PoDrugDTO>();
-				for (PoDrugDTO s : po) {
-					if (from.getPoId() == s.getPoId()) {
-						parsedData.add(s);
-					}
-				}
-
-				return PurchaseOrderDTO.builder().createdBy(from.getCreatedBy()).createdDate(from.getCreatedDate())
-						.poId(from.getPoId()).updatedBy(from.getUpdatedBy()).updatedDate(from.getUpdatedDate())
-						.referenceNumber(from.getPoReference()).poLineItem(parsedData).poStatus(from.getPoStatus()).build();
-			}
-		};
-		return transformer.transformCollection(list);
-	}
 
 	public static List<DrugAutoCompleteDTO> mapDrugToDrugAutoCompleteDTO(List<Drug> from,
 			StockRepository stockRepository) {
@@ -120,4 +122,6 @@ public abstract class CollectionMapper<FROM, TO> {
 		return transformer.transformCollection(from);
 
 	}
+
+	
 }

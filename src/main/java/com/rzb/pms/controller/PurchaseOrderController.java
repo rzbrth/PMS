@@ -47,7 +47,7 @@ public class PurchaseOrderController {
 			@ApiParam(value = "Page No", required = true) @RequestParam(defaultValue = "0") Integer page,
 			@ApiParam(value = "Page Size", required = true) @RequestParam(defaultValue = "10") Integer size,
 			@RequestParam(defaultValue = "createdDate:DESC", required = false) String sort,
-			@ApiParam(value = "Search Param") @RequestParam(defaultValue = "") String search) {
+			@ApiParam(value = "Search Param" , required = false) @RequestParam(defaultValue = "findall") String search) {
 
 		logger.info("Search Parameter: " + search);
 		logger.info("Sort Parameter: " + sort);
@@ -63,11 +63,11 @@ public class PurchaseOrderController {
 
 	@GetMapping(Endpoints.PO_BY_ID)
 	@ApiOperation("Get purchase order by Id")
-	public ResponseEntity<ResponseSchema<PurchaseOrderDTO>> getPoById(
+	public ResponseEntity<ResponseSchema<PurchaseOrderResponse>> getPoById(
 			@ApiParam(value = "Purchase Order Id", required = true) @RequestParam(required = true) Integer poId) {
 
 		return new ResponseEntity<>(ResponseUtil.buildSuccessResponse(orderService.findPOById(poId),
-				new ResponseSchema<PurchaseOrderDTO>()), HttpStatus.OK);
+				new ResponseSchema<PurchaseOrderResponse>()), HttpStatus.OK);
 	}
 
 	@PostMapping

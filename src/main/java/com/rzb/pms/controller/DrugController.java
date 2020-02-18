@@ -8,7 +8,6 @@ import javax.validation.Valid;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,8 +20,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.rzb.pms.config.ResponseSchema;
-import com.rzb.pms.dto.TopDrugAboutToExpire;
-import com.rzb.pms.dto.AddToCartWrapper;
 import com.rzb.pms.dto.DrugDTO;
 import com.rzb.pms.dto.DrugDtoReqRes;
 import com.rzb.pms.exception.CustomEntityNotFoundException;
@@ -30,7 +27,6 @@ import com.rzb.pms.exception.CustomException;
 import com.rzb.pms.log.Log;
 import com.rzb.pms.service.DrugDispensingService;
 import com.rzb.pms.service.DrugService;
-import com.rzb.pms.utils.BaseUtil;
 import com.rzb.pms.utils.Endpoints;
 import com.rzb.pms.utils.ResponseUtil;
 
@@ -144,20 +140,5 @@ public class DrugController<K> {
 						new ResponseSchema<List<DrugDTO>>()),
 				HttpStatus.OK);
 
-	}
-
-	@PostMapping(Endpoints.SELL)
-	@ApiOperation("Dispense drug")
-	public ResponseEntity<ResponseSchema<String>> addLineItemDispenseList(@RequestBody AddToCartWrapper wrpper)
-			throws CustomEntityNotFoundException, CustomException {
-
-		if (wrpper == null) {
-			logger.error("Line Items can't be empty", HttpStatus.BAD_REQUEST);
-			throw new CustomException("Line Items can't be empty", HttpStatus.BAD_REQUEST);
-		}
-
-		cartService.drugDispense(wrpper);
-		return new ResponseEntity<>(ResponseUtil.buildSuccessResponse("Success", new ResponseSchema<String>()),
-				HttpStatus.OK);
 	}
 }

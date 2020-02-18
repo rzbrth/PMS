@@ -21,7 +21,6 @@ import com.rzb.pms.dto.AuditType;
 import com.rzb.pms.dto.EntityInfoRequest;
 import com.rzb.pms.dto.OrderStatus;
 import com.rzb.pms.dto.PoDrugDTO;
-import com.rzb.pms.dto.PurchaseOrderDTO;
 import com.rzb.pms.dto.PurchaseOrderResponse;
 import com.rzb.pms.dto.ReferenceType;
 import com.rzb.pms.dto.ReportCategory;
@@ -45,7 +44,7 @@ import com.rzb.pms.utils.BaseUtil;
 import com.rzb.pms.utils.ReportUtills;
 
 @Service
-@SuppressWarnings("unchecked")
+@SuppressWarnings(value = { "unchecked", "unused", "rawtypes" })
 public class StockService<K> {
 
 	@Log
@@ -112,10 +111,15 @@ public class StockService<K> {
 		}
 		try {
 
-			for (PurchaseOrderDTO data : po.getPoData()) {
+			// check if any stock available against the poId
+			List<Stock> s = repository.findByPoId(po.getPoId());
 
-				if (data.getPoStatus().equalsIgnoreCase(OrderStatus.PROCESSED.toString())) {
-					for (PoDrugDTO stock : data.getPoLineItem()) {
+			if (!s.isEmpty()) {
+				throw new CustomException("Stock for the po(" + "PO_ID=" + po.getPoId() + ") already Created by: "
+						+ po.getCreatedBy() + " On " + po.getCreatedDate(), HttpStatus.BAD_REQUEST);
+			} else {
+				if (po.getPoStatus().equalsIgnoreCase(OrderStatus.PROCESSED.toString())) {
+					for (PoDrugDTO stock : po.getPoLineItem()) {
 
 						Drug drugData = drugRepository.findById(stock.getDrugId()).get();
 
@@ -126,8 +130,8 @@ public class StockService<K> {
 								.location(stock.getLocation()).mrp(stock.getDrugPrice()).packing(drugData.getPacking())
 								.stockCreatedAt(new Date()).unitPrice(stock.getDrugPrice() / drugData.getPacking())
 								.drugId(stock.getDrugId()).stockType(StockType.FROM_PO.toString())
-								.distributerId(stock.getDistributerId()).poId(data.getPoId())
-								.invoiceReference(data.getReferenceNumber()).drugName(drugData.getBrandName()).build());
+								.distributerId(stock.getDistributerId()).poId(po.getPoId())
+								.invoiceReference(po.getReferenceNumber()).drugName(drugData.getBrandName()).build());
 						try {
 							auditRepo.save(Audit.builder().auditType(AuditType.STOCK_IN_FROM_PO.toString())
 									.createdBy("").createdDate(new Date()).drugId(drugData.getDrugId()).build());
@@ -140,9 +144,9 @@ public class StockService<K> {
 
 				}
 
+				return "Stock created Successfully";
 			}
 
-			return "Stock created Successfully";
 		} catch (Exception e) {
 			logger.error("problem occured while creating stock", e);
 			throw new CustomException("problem occured while creating stock", e);

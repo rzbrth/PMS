@@ -1,6 +1,9 @@
 package com.rzb.pms.dto;
 
+import java.util.Date;
 import java.util.List;
+
+import com.rzb.pms.model.PurchaseOrder;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -13,6 +16,30 @@ import lombok.NoArgsConstructor;
 @Builder
 public class PurchaseOrderResponse {
 
-	private List<PurchaseOrderDTO> poData;
+	private Integer poId;
+
+	private Date createdDate;
+
+	private Date updatedDate;
+
+	private String createdBy;
+
+	private String updatedBy;
+
+	private String poStatus;
+
+	private String referenceNumber;
+
+	//private List<PurchaseOrderDTO> poData;
+	private List<PoDrugDTO> poLineItem;
+
+	public PurchaseOrderResponse(PurchaseOrder data) {
+
+		this.poId = data.getPoId();
+		this.createdDate = data.getCreatedDate();
+		this.updatedDate = data.getUpdatedDate();
+		this.updatedBy = data.getUpdatedBy();
+		this.createdBy = data.getUpdatedBy();
+	}
 
 }

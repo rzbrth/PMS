@@ -6,6 +6,9 @@ import java.util.stream.IntStream;
 
 import org.apache.commons.lang3.StringUtils;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class CustomEntityNotFoundException extends RuntimeException {
 
 	/**
@@ -16,6 +19,8 @@ public class CustomEntityNotFoundException extends RuntimeException {
 	public CustomEntityNotFoundException(Class<?> clazz, String... searchParamsMap) {
 		super(CustomEntityNotFoundException.createteMessage(clazz.getSimpleName(),
 				toMap(String.class, String.class, searchParamsMap)));
+		log.error(CustomEntityNotFoundException.createteMessage(clazz.getSimpleName(),
+				toMap(String.class, String.class, searchParamsMap)), this);
 	}
 
 	private static String createteMessage(String entity, Map<String, String> searchParams) {

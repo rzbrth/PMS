@@ -4,7 +4,9 @@ import static io.github.perplexhub.rsql.RSQLQueryDslSupport.toPredicate;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.persistence.EntityManager;
@@ -23,7 +25,6 @@ import com.rzb.pms.dto.PoDrugDTO;
 import com.rzb.pms.dto.PoLineItemAddDTO;
 import com.rzb.pms.dto.PoLineItemUpdateDTO;
 import com.rzb.pms.dto.PoUpdateDTO;
-import com.rzb.pms.dto.PurchaseOrderDTO;
 import com.rzb.pms.dto.PurchaseOrderResponse;
 import com.rzb.pms.dto.ReferenceType;
 import com.rzb.pms.exception.CustomEntityNotFoundException;
@@ -37,7 +38,6 @@ import com.rzb.pms.repository.AuditRepository;
 import com.rzb.pms.repository.PoLineItemsRepository;
 import com.rzb.pms.repository.PurchaseOrderRepository;
 import com.rzb.pms.utils.BaseUtil;
-import com.rzb.pms.utils.CollectionMapper;
 
 @Service
 public class PurchaseOrderService {
@@ -67,7 +67,30 @@ public class PurchaseOrderService {
 			logger.error("Order can't be empty");
 			throw new CustomException("Order can't be empty", HttpStatus.BAD_REQUEST);
 		}
+		Boolean result;
+		Boolean poStatus = repository.checkPoStatus(data.getDistributerId());
+		Map<String, Boolean> checker = new HashMap<>();
+		if (poStatus) {
+			for (PoLineItemAddDTO d : data.getLineItem()) {
+				result = repository.findPoExistOrNot(data.getDistributerId(), d.getDrugId(), d.getDrugQuantity());
+				checker.put(d.getDrugId(), result ? true : false);
+			}
+		}
+		for (PoLineItemAddDTO c : data.getLineItem()) {
 
+			for (Map.Entry<String, Boolean> entry : checker.entrySet()) {
+
+				if (c.getDrugId().equals(entry.getKey()) && entry.getValue() == true) {
+
+					throw new CustomException(
+							"Pending PO is already present for the drug : " + c.getDrugName() + ", Quantity : "
+									+ c.getDrugQuantity()
+									+ "Please verify previous PO or create new PO with different drug quantity",
+							HttpStatus.BAD_REQUEST);
+				}
+
+			}
+		}
 		try {
 			/*
 			 * save data to PurchaseOrder table and gate id and against that PurchaseOrder
@@ -150,7 +173,7 @@ public class PurchaseOrderService {
 	public List<PurchaseOrderResponse> findAllOrder(String filter, PageRequest pageRequest) {
 
 		List<PurchaseOrder> orderInfo = new ArrayList<PurchaseOrder>();
-		if (filter == null || filter.isEmpty()) {
+		if (filter == null || filter.isEmpty() || filter.equalsIgnoreCase("findall")) {
 			orderInfo = repository.findAll(pageRequest).getContent();
 		} else {
 			orderInfo = repository.findAll(toPredicate(filter, QPurchaseOrder.purchaseOrder), pageRequest).getContent();
@@ -162,6 +185,8 @@ public class PurchaseOrderService {
 
 		List<PurchaseOrderResponse> response = new ArrayList<PurchaseOrderResponse>();
 		List<PoDrugDTO> res = new ArrayList<PoDrugDTO>();
+		List<PoDrugDTO> parsedRes = new ArrayList<PoDrugDTO>();
+
 		for (PurchaseOrder data : orderInfo) {
 			for (PoLineItems st : data.getPodrug()) {
 
@@ -172,11 +197,23 @@ public class PurchaseOrderService {
 				res.add(result);
 
 			}
+
 		}
 
-		response.add(PurchaseOrderResponse.builder()
-				.poData(CollectionMapper.mapPurchaseOrderToPurchaseOrderDTO(orderInfo, res)).build());
+		for (PurchaseOrder d : orderInfo) {
+			parsedRes.clear();
+			for (PoDrugDTO x : res) {
+				if (d.getPoId().equals(x.getPoId())) {
+					parsedRes.add(x);
 
+				}
+
+			}
+			PurchaseOrderResponse result = PurchaseOrderResponse.builder().poId(d.getPoId()).createdBy(d.getCreatedBy())
+					.createdDate(d.getCreatedDate()).poStatus(d.getPoStatus()).referenceNumber(d.getPoReference())
+					.updatedBy(d.getUpdatedBy()).updatedDate(d.getUpdatedDate()).poLineItem(parsedRes).build();
+			response.add(result);
+		}
 		return response;
 	}
 
@@ -184,7 +221,7 @@ public class PurchaseOrderService {
 	 * Return purchase order based on id
 	 */
 
-	public PurchaseOrderDTO findPOById(Integer poId) {
+	public PurchaseOrderResponse findPOById(Integer poId) {
 
 		if (poId == null) {
 			logger.error("Purchase order id can't be null", HttpStatus.BAD_REQUEST);
@@ -194,10 +231,10 @@ public class PurchaseOrderService {
 		PurchaseOrder order = repository.findById(poId).get();
 		if (order == null) {
 			logger.error("No purchase order available for given id", HttpStatus.NOT_FOUND);
-			throw new CustomEntityNotFoundException(PurchaseOrder.class, poId.toString());
+			throw new CustomEntityNotFoundException(PurchaseOrder.class, "PO Id", poId.toString());
 		}
 
-		return PurchaseOrderDTO.builder().createdBy(order.getCreatedBy()).createdDate(order.getCreatedDate())
+		return PurchaseOrderResponse.builder().createdBy(order.getCreatedBy()).createdDate(order.getCreatedDate())
 				.poId(order.getPoId()).updatedBy(order.getUpdatedBy()).updatedDate(order.getUpdatedDate())
 				.poStatus(order.getPoStatus())
 				.poLineItem(order.getPodrug().stream().map(x -> new PoDrugDTO(x)).collect(Collectors.toList())).build();
