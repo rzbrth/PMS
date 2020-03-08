@@ -5,13 +5,15 @@ import java.util.List;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
-import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,12 +21,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.rzb.pms.config.ResponseSchema;
-import com.rzb.pms.dto.EntityInfoRequest;
+import com.rzb.pms.dto.ExpiredItemReturnWrapper;
 import com.rzb.pms.dto.PurchaseOrderResponse;
 import com.rzb.pms.dto.StockDirectRequestDTOWrapper;
+import com.rzb.pms.dto.StockResponseDto;
 import com.rzb.pms.dto.TopDrugAboutToExpire;
 import com.rzb.pms.exception.CustomException;
-import com.rzb.pms.log.Log;
 import com.rzb.pms.service.StockService;
 import com.rzb.pms.utils.BaseUtil;
 import com.rzb.pms.utils.Endpoints;
@@ -32,69 +34,46 @@ import com.rzb.pms.utils.ResponseUtil;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @SuppressWarnings("unchecked")
 @RequestMapping(value = Endpoints.VERSION_1 + Endpoints.STOCK)
+@Slf4j
 public class StockController {
 
 	@SuppressWarnings("rawtypes")
 	@Autowired
 	private StockService service;
 
-	@Log
-	private Logger logger;
 
 	/*
 	 * Create stock directly
 	 */
+	@PreAuthorize("hasAnyAuthority('ADMIN', 'USER')")
 	@PostMapping
 	@ApiOperation("Add stock directly without po")
 	public ResponseEntity<ResponseSchema<String>> addStockDirect(@RequestBody StockDirectRequestDTOWrapper lineItem) {
 
 		return new ResponseEntity<>(
 				ResponseUtil.buildSuccessResponse(service.addStockWithoutPR(lineItem), new ResponseSchema<String>()),
-				HttpStatus.OK);
+				HttpStatus.CREATED);
 
 	}
 
 	/*
 	 * This will Create stock from purchase order
 	 */
-	@PostMapping(Endpoints.ADD_STOCK_FROM_PO)
+	@PreAuthorize("hasAnyAuthority('ADMIN', 'USER')")
+	@PostMapping(Endpoints.PO)
 	@ApiOperation("Add stock from po")
 	public ResponseEntity<ResponseSchema<String>> addStockFromPO(@RequestBody PurchaseOrderResponse po) {
 
 		return new ResponseEntity<>(
 				ResponseUtil.buildSuccessResponse(service.addStockFromPR(po), new ResponseSchema<String>()),
-				HttpStatus.OK);
+				HttpStatus.CREATED);
 
 	}
-
-	/*
-	 * Allowed Search Criterias are as follows
-	 * stockCreatedAt,stockId,drugId,location,expiryDate,distributerId,
-	 * invoiceReference,poReferenseNumber
-	 * 
-	 * Allowed Sort criteria are as follows expiryDate, expiryStatus
-	 * 
-	 */
-//	@GetMapping(Endpoints.STOCK + Endpoints.STOCK_EXPIRE)
-//	@ApiOperation("Find expired or about to expire Item")
-//	public ResponseEntity<ResponseSchema<List<TopDrugAboutToExpire>>> checkForExpiration(
-//			@ApiParam(value = "Sort patameter") @Valid @RequestParam(defaultValue = "expiryDate:DESC") String sort,
-//			@ApiParam(value = "Page Number", required = true) @RequestParam(defaultValue = "0") Integer page,
-//			@ApiParam(value = "Page Size", required = true) @RequestParam(defaultValue = "10") Integer size,
-//			@ApiParam(value = "Search Criteria") @RequestParam String search) throws CustomEntityNotFoundException {
-//		logger.info("Search Parameter: " + search);
-//		logger.info("Sort Parameter: " + sort);
-//		Sort sortCriteria = BaseUtil.getSortObject(sort);
-//		PageRequest pageRequest = PageRequest.of(page - 1, size, sortCriteria);
-//
-//		return new ResponseEntity<>(ResponseUtil.buildSuccessResponse(service.checkForExpiry(search, pageRequest),
-//				new ResponseSchema<List<TopDrugAboutToExpire>>()), HttpStatus.OK);
-//
-//	}
 
 	/*
 	 * This controller is to find all stock info or single stock info by id. It
@@ -107,38 +86,78 @@ public class StockController {
 	 * Allowed Sort criteria are as follows expiryDate, expiryStatus and sort order
 	 * are ASC or DSC
 	 */
-	@GetMapping(Endpoints.STOCK_INFO)
-	@ApiOperation("Find all stock or single stock information")
-	public ResponseEntity<ResponseSchema<List<TopDrugAboutToExpire>>> checkForExpiration(
+	@PreAuthorize("hasAnyAuthority('ADMIN', 'USER')")
+	@GetMapping(Endpoints.GET_ALL_STOCK_WITH_EXPORT_OPTION)
+	@ApiOperation("Find all stock with export option")
+	public ResponseEntity<ResponseSchema<List<StockResponseDto>>> findAllStockWithExportOption(
 			@ApiParam(value = "Sort patameter", required = false) @Valid @RequestParam(defaultValue = "expiryDate:DESC") String sort,
 			@ApiParam(value = "Page Number", required = false) @RequestParam(defaultValue = "1") Integer page,
 			@ApiParam(value = "Page Size") @RequestParam(defaultValue = "10") Integer size,
 			@ApiParam(value = "Search Criteria", required = false) @RequestParam String search,
-			@ApiParam(value = "Stock Id", required = false) @RequestParam Integer stockId,
-			@ApiParam(value = "Entity Request", required = true, allowableValues = "FIND_ALL, FIND_ONE") @RequestParam String entityInfoRequest,
 			@ApiParam(value = "Export choice", required = true) @RequestParam(defaultValue = "false") Boolean isExported,
 			@ApiParam(value = "Export Type", required = true) @RequestParam(defaultValue = "EXCEL") String exportType,
 			HttpServletResponse response) throws CustomException {
-		logger.info("Search Parameter: " + search);
-		logger.info("Sort Parameter: " + sort);
+		log.info("Search Parameter: " + search);
+		log.info("Sort Parameter: " + sort);
 
-		if (entityInfoRequest.equalsIgnoreCase(EntityInfoRequest.FIND_ALL.toString())) {
-
-			if (page == null || size == null) {
-				throw new CustomException("Page number or Page Size can not be empty", HttpStatus.BAD_REQUEST);
-			}
-			if (page == 0) {
-				throw new CustomException("Page number can not be 0", HttpStatus.BAD_REQUEST);
-
-			}
+		if (page == null || size == null) {
+			throw new CustomException("Page number or Page Size can not be empty", HttpStatus.BAD_REQUEST);
 		}
+		if (page == 0) {
+			throw new CustomException("Page number can not be 0", HttpStatus.BAD_REQUEST);
+
+		}
+
 		Sort sortCriteria = BaseUtil.getSortObject(sort);
 		PageRequest pageRequest = PageRequest.of(page - 1, size, sortCriteria);
 
+		return new ResponseEntity<>(ResponseUtil.buildSuccessResponse(
+				service.findAllStock(search.trim(), pageRequest, isExported, exportType, response),
+				new ResponseSchema<List<StockResponseDto>>()), HttpStatus.OK);
+
+	}
+
+	@PreAuthorize("hasAnyAuthority('ADMIN', 'USER')")
+	@GetMapping(Endpoints.GET_STOCK_BY_ID)
+	@ApiOperation("Find stock by id")
+	public ResponseEntity<ResponseSchema<StockResponseDto>> getStockById(
+			@ApiParam(value = "Stock Id", required = true) @PathVariable Integer stockId) {
+
+		return new ResponseEntity<>(ResponseUtil.buildSuccessResponse(service.getStockById(stockId),
+				new ResponseSchema<StockResponseDto>()), HttpStatus.OK);
+
+	}
+
+	@PreAuthorize("hasAnyAuthority('ADMIN', 'USER')")
+	@GetMapping(Endpoints.GET_TOP4_ABOUT_TO_EXPIRE_STOCK)
+	@ApiOperation("Find top 4 about to expire stock")
+	public ResponseEntity<ResponseSchema<List<TopDrugAboutToExpire>>> findAboutToExpireStock() {
+
+		return new ResponseEntity<>(ResponseUtil.buildSuccessResponse(service.checkForAboutToExpireItem(),
+				new ResponseSchema<List<TopDrugAboutToExpire>>()), HttpStatus.OK);
+
+	}
+	@PreAuthorize("hasAnyAuthority('ADMIN', 'USER')")
+	@PostMapping(Endpoints.RETURN_EXPIRED_ITEM)
+	@ApiOperation("Create return request for expired items")
+	public ResponseEntity<ResponseSchema<String>> returnExpiredItem(@RequestBody ExpiredItemReturnWrapper wrapper) {
+
 		return new ResponseEntity<>(
-				ResponseUtil.buildSuccessResponse(service.findStockDetails(search.trim(), pageRequest, isExported, exportType,
-						stockId, response, entityInfoRequest), new ResponseSchema<List<TopDrugAboutToExpire>>()),
+				ResponseUtil.buildSuccessResponse(service.emptyExpiredStock(wrapper), new ResponseSchema<String>()),
 				HttpStatus.OK);
 
 	}
+	@PreAuthorize("hasAnyAuthority('ADMIN', 'USER')")
+	@DeleteMapping(Endpoints.DELETE_STOCK)
+	@ApiOperation("Delete stock by id")
+	public ResponseEntity<ResponseSchema<String>> deleteDrug(
+			@ApiParam(value = "Stock Id", required = true) @PathVariable Integer stockId) {
+
+		return new ResponseEntity<>(
+				ResponseUtil.buildSuccessResponse(service.deleteStockById(stockId), new ResponseSchema<String>()),
+				HttpStatus.OK);
+
+	}
+	
+	
 }

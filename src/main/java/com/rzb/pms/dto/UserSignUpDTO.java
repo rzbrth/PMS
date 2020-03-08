@@ -9,14 +9,18 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class DrugDispenseDTO {
+public class UserSignUpDTO {
 
-	private String drugId;
+	private String userName;
 
-	private Double itemSellQuantity;
+	private String userRole;
 
-	private String drugUnit;// Strip or trimmed
-	
-	private Boolean isDiscountApplicable;
+	private String password;
+
+	private String phone;
+
+	private String email;
+
+	private Boolean isEnabled;
 
 }

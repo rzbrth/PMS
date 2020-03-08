@@ -1,6 +1,6 @@
 package com.rzb.pms.dto;
 
-public enum OrderStatus {
+public enum RequestStatus {
 
 	PENDING, PROCESSED;
 

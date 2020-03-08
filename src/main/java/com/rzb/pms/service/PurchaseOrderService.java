@@ -2,6 +2,7 @@ package com.rzb.pms.service;
 
 import static io.github.perplexhub.rsql.RSQLQueryDslSupport.toPredicate;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -12,14 +13,12 @@ import java.util.stream.Collectors;
 import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 
-import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import com.rzb.pms.dto.AuditType;
-import com.rzb.pms.dto.OrderStatus;
 import com.rzb.pms.dto.PoCreateDTO;
 import com.rzb.pms.dto.PoDrugDTO;
 import com.rzb.pms.dto.PoLineItemAddDTO;
@@ -27,9 +26,9 @@ import com.rzb.pms.dto.PoLineItemUpdateDTO;
 import com.rzb.pms.dto.PoUpdateDTO;
 import com.rzb.pms.dto.PurchaseOrderResponse;
 import com.rzb.pms.dto.ReferenceType;
+import com.rzb.pms.dto.RequestStatus;
 import com.rzb.pms.exception.CustomEntityNotFoundException;
 import com.rzb.pms.exception.CustomException;
-import com.rzb.pms.log.Log;
 import com.rzb.pms.model.Audit;
 import com.rzb.pms.model.PoLineItems;
 import com.rzb.pms.model.PurchaseOrder;
@@ -39,11 +38,11 @@ import com.rzb.pms.repository.PoLineItemsRepository;
 import com.rzb.pms.repository.PurchaseOrderRepository;
 import com.rzb.pms.utils.BaseUtil;
 
-@Service
-public class PurchaseOrderService {
+import lombok.extern.slf4j.Slf4j;
 
-	@Log
-	private Logger logger;
+@Service
+@Slf4j
+public class PurchaseOrderService {
 
 	@Autowired
 	private PurchaseOrderRepository repository;
@@ -64,7 +63,7 @@ public class PurchaseOrderService {
 	public String createPO(PoCreateDTO data) {
 
 		if (data == null) {
-			logger.error("Order can't be empty");
+			log.error("Order can't be empty");
 			throw new CustomException("Order can't be empty", HttpStatus.BAD_REQUEST);
 		}
 		Boolean result;
@@ -96,14 +95,14 @@ public class PurchaseOrderService {
 			 * save data to PurchaseOrder table and gate id and against that PurchaseOrder
 			 * id as fk save drug request to PoLineItems.
 			 */
-			PurchaseOrder orderData = PurchaseOrder.builder().createdBy("").createdDate(new Date())
+			PurchaseOrder orderData = PurchaseOrder.builder().createdBy("").createdDate(LocalDate.now())
 					.poReference(BaseUtil.getRandomReference(ReferenceType.PO.toString()))
-					.poStatus(OrderStatus.PENDING.toString()).distributerId(data.getDistributerId()).build();
+					.poStatus(RequestStatus.PENDING.toString()).distributerId(data.getDistributerId()).build();
 			em.persist(orderData);
 			em.flush();
 			try {
 				auditRepo.save(Audit.builder().auditType(AuditType.PO_CREATED.toString()).createdBy("")
-						.createdDate(new Date()).poId(orderData.getPoId()).build());
+						.createdDate(LocalDate.now()).poId(orderData.getPoId()).build());
 			} catch (Exception e) {
 				throw new CustomException("Problem while auditing PO creation", e);
 			}
@@ -116,7 +115,7 @@ public class PurchaseOrderService {
 			}
 			return "PO created Successfully";
 		} catch (Exception e) {
-			logger.error("problem occured while creating PO", e);
+			log.error("problem occured while creating PO", e);
 			throw new CustomException("problem occured while creating PO", e);
 		}
 	}
@@ -125,24 +124,21 @@ public class PurchaseOrderService {
 	 * This is used to update Purchase Order against poId
 	 */
 	@Transactional
-	public String updatePO(PoUpdateDTO data) {
+	public String updatePO(PoUpdateDTO data, Integer poId) {
 		try {
 			if (data == null) {
-				logger.error("Order can't be empty");
+				log.error("Order can't be empty");
 				throw new CustomException("Order can't be empty", HttpStatus.BAD_REQUEST);
 			}
-
-//			repository.save(
-//					PurchaseOrder.builder().updatedBy("").updatedDate(new Date()).poStatus(data.getPoStatus()).build());
 
 			em.createNativeQuery(
 					"UPDATE purchase_order SET updated_by = ?, updated_date = ?, po_status = ?, distributer_id = ? WHERE po_id = ?")
 					.setParameter(1, "").setParameter(2, new Date()).setParameter(3, data.getPoStatus())
-					.setParameter(4, data.getDistributerId()).setParameter(5, data.getPoId()).executeUpdate();
+					.setParameter(4, data.getDistributerId()).setParameter(5, poId).executeUpdate();
 
 			try {
 				auditRepo.save(Audit.builder().auditType(AuditType.PO_UPDATED.toString()).updatedBy("")
-						.updatedDate(new Date()).poId(data.getPoId()).build());
+						.updatedDate(LocalDate.now()).poId(poId).build());
 			} catch (Exception e) {
 				throw new CustomException("Problem while auditing PO updation", e);
 			}
@@ -159,7 +155,7 @@ public class PurchaseOrderService {
 
 			return "PO updated Successfully";
 		} catch (Exception e) {
-			logger.error("problem occured while updating PO", e);
+			log.error("problem occured while updating PO", e);
 			throw new CustomException("problem occured while updating PO", e);
 		}
 	}
@@ -175,11 +171,11 @@ public class PurchaseOrderService {
 		List<PurchaseOrder> orderInfo = new ArrayList<PurchaseOrder>();
 		if (filter == null || filter.isEmpty() || filter.equalsIgnoreCase("findall")) {
 			orderInfo = repository.findAll(pageRequest).getContent();
-		} else {
-			orderInfo = repository.findAll(toPredicate(filter, QPurchaseOrder.purchaseOrder), pageRequest).getContent();
 		}
+		orderInfo = repository.findAll(toPredicate(filter, QPurchaseOrder.purchaseOrder), pageRequest).getContent();
+
 		if (orderInfo.isEmpty()) {
-			logger.error("No purchase order available", HttpStatus.NOT_FOUND);
+			log.error("No purchase order available", HttpStatus.NOT_FOUND);
 			throw new CustomException("No purchase order available", HttpStatus.NOT_FOUND);
 		}
 
@@ -224,13 +220,11 @@ public class PurchaseOrderService {
 	public PurchaseOrderResponse findPOById(Integer poId) {
 
 		if (poId == null) {
-			logger.error("Purchase order id can't be null", HttpStatus.BAD_REQUEST);
 			throw new CustomException("Purchase order id can't be null", HttpStatus.BAD_REQUEST);
 		}
 
 		PurchaseOrder order = repository.findById(poId).get();
 		if (order == null) {
-			logger.error("No purchase order available for given id", HttpStatus.NOT_FOUND);
 			throw new CustomEntityNotFoundException(PurchaseOrder.class, "PO Id", poId.toString());
 		}
 
@@ -246,17 +240,17 @@ public class PurchaseOrderService {
 	public String deletePO(Integer poId, String poStatus) {
 		try {
 			if (poId == null) {
-				logger.error("Purchase order id can't be null", HttpStatus.BAD_REQUEST);
+				log.error("Purchase order id can't be null", HttpStatus.BAD_REQUEST);
 				throw new CustomException("Purchase order id can't be null", HttpStatus.BAD_REQUEST);
 			}
 
-			if (poStatus.equals(OrderStatus.PENDING.toString())) {
+			if (poStatus.equals(RequestStatus.PENDING.toString())) {
 
 				repository.deleteById(poId);
 
 				try {
 					auditRepo.save(Audit.builder().auditType(AuditType.PO_DELETED.toString()).updatedBy("")
-							.updatedDate(new Date()).poId(poId).build());
+							.updatedDate(LocalDate.now()).poId(poId).build());
 				} catch (Exception e) {
 					throw new CustomException("Problem while auditing PO deletion", e);
 				}
@@ -265,8 +259,31 @@ public class PurchaseOrderService {
 			return "PO deleted successfully";
 
 		} catch (Exception e) {
-			logger.error("problem occured while deleting PO", e);
+			log.error("problem occured while deleting PO", e);
 			throw new CustomException("problem occured while deleting PO", e);
+		}
+	}
+
+	public String updatePOStatus(String poStatus, Integer poId) {
+
+		if (poId == null || poStatus == null) {
+			throw new CustomException("Po Id or Po status can not be null or empty", HttpStatus.BAD_REQUEST);
+		}
+
+		PurchaseOrder poData = repository.findById(poId).get();
+
+		if (poData == null) {
+			throw new CustomEntityNotFoundException(PurchaseOrder.class, "Po Id", poId.toString());
+		}
+
+		try {
+
+			em.createNativeQuery("UPDATE purchase_order SET  ? WHERE po_id = ?").setParameter(1, poId).executeUpdate();
+
+			return "Po status update successfull";
+
+		} catch (Exception e) {
+			throw new CustomException("Problem occured while updating po status", e);
 		}
 	}
 }

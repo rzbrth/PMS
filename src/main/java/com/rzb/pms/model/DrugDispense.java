@@ -1,6 +1,6 @@
 package com.rzb.pms.model;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -22,9 +22,9 @@ public class DrugDispense {
 	@Id
 	@GeneratedValue(strategy = GenerationType.SEQUENCE)
 	private Integer dispenseId;
-	
+
 	private String mobileNumber;
-	
+
 	private String drugId;
 
 	private String genericName;
@@ -33,7 +33,7 @@ public class DrugDispense {
 
 	private String brandName;
 
-	private Date sellDate;
+	private LocalDate sellDate;
 
 	private String sellBy;
 
@@ -55,13 +55,12 @@ public class DrugDispense {
 
 	private String drugUnit;// Strip or trimmed
 
-	private Date expiryDate;
+	private LocalDate expiryDate;
 
 	private String drugForm;
 
 	private String customerName;
-	
-	private String sellInvoiceNumber;
 
+	private String sellInvoiceNumber;
 
 }

@@ -1,6 +1,6 @@
 package com.rzb.pms.model;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -25,11 +25,11 @@ public class Audit {
 
 	private String auditType;
 
-	private Date createdDate;
+	private LocalDate createdDate;
 
 	private String createdBy;
 
-	private Date updatedDate;
+	private LocalDate updatedDate;
 
 	private String updatedBy;
 
@@ -41,6 +41,10 @@ public class Audit {
 
 	private Integer poId;
 
+	private Long userId;
+
 	private String drugId;
+
+	private Integer returnId;
 
 }

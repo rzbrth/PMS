@@ -1,6 +1,6 @@
 package com.rzb.pms.dto;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 import org.apache.commons.lang3.time.DateFormatUtils;
 
@@ -22,9 +22,9 @@ public class StockResponseDto {
 
 	private String drugId;
 
-	private Date stockCreatedAt;
+	private LocalDate stockCreatedAt;
 
-	private Date stockUpdatedAt;
+	private LocalDate stockUpdatedAt;
 
 	private String createddBy;
 
@@ -42,7 +42,7 @@ public class StockResponseDto {
 
 	private String expireStatus;
 
-	private String expireDate;
+	private LocalDate expireDate;
 
 	private String expireTimeLeft;
 
@@ -79,7 +79,7 @@ public class StockResponseDto {
 		this.stockUpdatedAt = data.getStockUpdatedAt();
 		this.unitPrice = data.getUnitPrice();
 		this.updatedBy = data.getUpdatedBy();
-		this.expireDate = DateFormatUtils.format(data.getExpiryDate(), "dd-MM-yyyy HH:mm:SS");
+		this.expireDate = data.getExpiryDate();
 		this.expireStatus = BaseUtil.getExpireStatus(data.getExpiryDate());
 		this.expireTimeLeft = BaseUtil.remainingExpireTime(data.getExpiryDate());
 		this.drugName = data.getDrugName();

@@ -7,6 +7,13 @@ import org.springframework.stereotype.Repository;
 import com.rzb.pms.model.Users;
 
 @Repository
-public interface UserRepository extends JpaRepository<Users, Integer>, CrudRepository<Users, Integer> {
+public interface UserRepository extends JpaRepository<Users, Long>, CrudRepository<Users, Long> {
 
+	Users findByUserName(String username);
+
+	boolean existsUsersByEmail(String email);
+
+	boolean existsUsersByPhone(String phone);
+
+	Users findByEmail(String email);
 }

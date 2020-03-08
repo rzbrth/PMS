@@ -1,6 +1,6 @@
 package com.rzb.pms.dto;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 import com.rzb.pms.model.Drug;
 
@@ -9,12 +9,11 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
-
-@EqualsAndHashCode(callSuper=false)
+@EqualsAndHashCode(callSuper = false)
 @Data
 @AllArgsConstructor
 @Builder
-public class DrugDTO extends AbstractResolver{
+public class DrugDTO extends AbstractResolver {
 
 	private String drugId;
 
@@ -36,7 +35,7 @@ public class DrugDTO extends AbstractResolver{
 
 	private String location;
 
-	private Date expiryDate;
+	private LocalDate expiryDate;
 
 	private String drugForm;
 

@@ -1,6 +1,5 @@
 package com.rzb.pms.utils;
 
-import java.io.File;
 import java.io.FileOutputStream;
 import java.util.List;
 
@@ -32,10 +31,10 @@ public class ReportUtills<K> {
 	public ResponseEntity<K> generateReport(HttpServletResponse response, String exportTpe, String reportCategory,
 			List<K> req) {
 
-		boolean fileExists = false;
-		File csvFile = null;
-		String contentType = null;
-		byte[] content = null;
+//		boolean fileExists = false;
+//		File csvFile = null;
+//		String contentType = null;
+//		byte[] content = null;
 
 		switch (reportCategory) {
 

@@ -1,13 +1,11 @@
 package com.rzb.pms.model;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -30,13 +28,12 @@ public class Stock {
 	private Integer stockId;
 
 	private String drugId;
-	
+
 	private String drugName;
 
-    @Temporal(TemporalType.TIMESTAMP)
-	private Date stockCreatedAt;
+	private LocalDate stockCreatedAt;
 
-	private Date stockUpdatedAt;
+	private LocalDate stockUpdatedAt;
 
 	private String createddBy;
 
@@ -48,11 +45,11 @@ public class Stock {
 
 	private Float unitPrice;
 
-	//private String genericId;
+	// private String genericId;
 
 	private String location;
 
-	private Date expiryDate;
+	private LocalDate expiryDate;
 
 	private Double avlQntyWhole;
 
@@ -65,7 +62,7 @@ public class Stock {
 	private String invoiceReference;
 
 	private Integer poLId;
-	
+
 	private Integer poId;
 
 }

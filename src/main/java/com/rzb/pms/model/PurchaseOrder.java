@@ -1,6 +1,6 @@
 package com.rzb.pms.model;
 
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.List;
 
 import javax.persistence.CascadeType;
@@ -30,9 +30,9 @@ public class PurchaseOrder {
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private Integer poId;
 
-	private Date createdDate;
+	private LocalDate createdDate;
 
-	private Date updatedDate;
+	private LocalDate updatedDate;
 
 	private String createdBy;
 

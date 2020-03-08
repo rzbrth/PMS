@@ -2,12 +2,18 @@ package com.rzb.pms.dto;
 
 import java.util.List;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
-public class AddToCartWrapper {
-
-	private List<DrugDispenseDTO> item;
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+public class ProcessCartItemWrapper {
+	
+	private List<AddToCartDTORes> item;
 
 	private String customerName;
 
@@ -19,9 +25,9 @@ public class AddToCartWrapper {
 
 	private Boolean isInvoiceRequired;
 
-	private float discount;
-
 	private String invoiceType;
-	// private OtherInfoDTO info;
+	
+	
+	
 
 }

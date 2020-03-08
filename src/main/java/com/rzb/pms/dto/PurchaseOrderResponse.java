@@ -1,6 +1,6 @@
 package com.rzb.pms.dto;
 
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.List;
 
 import com.rzb.pms.model.PurchaseOrder;
@@ -18,9 +18,9 @@ public class PurchaseOrderResponse {
 
 	private Integer poId;
 
-	private Date createdDate;
+	private LocalDate createdDate;
 
-	private Date updatedDate;
+	private LocalDate updatedDate;
 
 	private String createdBy;
 
@@ -30,7 +30,7 @@ public class PurchaseOrderResponse {
 
 	private String referenceNumber;
 
-	//private List<PurchaseOrderDTO> poData;
+	// private List<PurchaseOrderDTO> poData;
 	private List<PoDrugDTO> poLineItem;
 
 	public PurchaseOrderResponse(PurchaseOrder data) {

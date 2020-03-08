@@ -6,7 +6,6 @@ import java.time.ZoneId;
 import java.util.Date;
 
 import org.apache.commons.lang3.RandomStringUtils;
-import org.slf4j.Logger;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.http.HttpStatus;
@@ -15,15 +14,14 @@ import com.rzb.pms.dto.DrugType;
 import com.rzb.pms.dto.ExpireStatus;
 import com.rzb.pms.dto.ReferenceType;
 import com.rzb.pms.exception.CustomException;
-import com.rzb.pms.log.Log;
 import com.rzb.pms.rsql.SearchCriteria;
 import com.rzb.pms.rsql.SearchKey;
 import com.rzb.pms.rsql.SearchOperators;
 
-public class BaseUtil {
+import lombok.extern.slf4j.Slf4j;
 
-	@Log
-	private static Logger logger;
+@Slf4j
+public class BaseUtil {
 
 	/**
 	 * This method will take the sort criteria and process it accordingly Only
@@ -38,7 +36,7 @@ public class BaseUtil {
 		String[] sorts = sort.split(",");
 		for (String s : sorts) {
 			if (s.split(":").length != 2) {
-				logger.error("Please give a proper sort argument", HttpStatus.NOT_FOUND);
+				log.error("Please give a proper sort argument", HttpStatus.NOT_FOUND);
 				throw new CustomException("Please give a proper sort argument", HttpStatus.NOT_FOUND);
 			}
 			String sortBy = s.split(":")[0];
@@ -53,7 +51,7 @@ public class BaseUtil {
 						sortObj = sortObj.and(Sort.by(Direction.fromString(sortOrder), sortBy));
 					}
 				} else {
-					logger.error("Please give a proper sort Order like ASC(Ascending) or DSC(Descending) ",
+					log.error("Please give a proper sort Order like ASC(Ascending) or DSC(Descending) ",
 							HttpStatus.NOT_FOUND);
 					throw new CustomException("Please give a proper sort Order like ASC(Ascending) or DSC(Descending) ",
 							HttpStatus.NOT_FOUND);
@@ -68,7 +66,7 @@ public class BaseUtil {
 						sortObj = sortObj.and(Sort.by(Direction.fromString(sortOrder), sortBy));
 					}
 				} else {
-					logger.error("Please give a proper sort Order like ASC(Ascending) or DSC(Descending) ",
+					log.error("Please give a proper sort Order like ASC(Ascending) or DSC(Descending) ",
 							HttpStatus.NOT_FOUND);
 					throw new CustomException("Please give a proper sort Order like ASC(Ascending) or DSC(Descending) ",
 							HttpStatus.NOT_FOUND);
@@ -76,7 +74,7 @@ public class BaseUtil {
 				}
 
 			} else {
-				logger.error("Please give a proper sort argument Like expiryDate, unitPrice, mrp",
+				log.error("Please give a proper sort argument Like expiryDate, unitPrice, mrp",
 						HttpStatus.NOT_FOUND);
 				throw new CustomException("Please give a proper sort argument Like expiryDate, unitPrice, mrp",
 						HttpStatus.NOT_FOUND);
@@ -99,7 +97,7 @@ public class BaseUtil {
 		String key, operator = null;
 		String[] o = queryParam.split("==|>=|=lk=|<|=bt=");
 		if (o.length < 2) {
-			logger.error("Please provide proper search Criteria, Supported operators are ==, >=,=lk= ,< ",
+			log.error("Please provide proper search Criteria, Supported operators are ==, >=,=lk= ,< ",
 					HttpStatus.BAD_REQUEST);
 			throw new CustomException("Please provide proper search Criteria, Supported operators are ==, >=,=lk= ,< ",
 					HttpStatus.BAD_REQUEST);
@@ -117,7 +115,7 @@ public class BaseUtil {
 		case DRUG_NAME: {
 			if (!(SearchOperators.LIKE.getName().equals(operator)
 					|| SearchOperators.EQUALITY.getName().equals(operator))) {
-				logger.error("Please provide proper search params, brandName will only support =lk= OR ==",
+				log.error("Please provide proper search params, brandName will only support =lk= OR ==",
 						HttpStatus.BAD_REQUEST);
 				throw new CustomException("Please provide proper search params, brandName will only support =lk= OR ==",
 						HttpStatus.BAD_REQUEST);
@@ -129,7 +127,7 @@ public class BaseUtil {
 		case GENERIC_NAME: {
 			if (!(SearchOperators.LIKE.getName().equals(operator)
 					|| SearchOperators.EQUALITY.getName().equals(operator))) {
-				logger.error("Please provide proper search params, genericName will only support =lk= OR ==",
+				log.error("Please provide proper search params, genericName will only support =lk= OR ==",
 						HttpStatus.BAD_REQUEST);
 				throw new CustomException(
 						"Please provide proper search params, genericName will only support =lk= OR ==",
@@ -142,7 +140,7 @@ public class BaseUtil {
 		case COMPANY: {
 			if (!(SearchOperators.LIKE.getName().equals(operator)
 					|| SearchOperators.EQUALITY.getName().equals(operator))) {
-				logger.error("Please provide proper search params, company will only support =lk= OR ==",
+				log.error("Please provide proper search params, company will only support =lk= OR ==",
 						HttpStatus.BAD_REQUEST);
 				throw new CustomException("Please provide proper search params, company will only support =lk= OR ==",
 						HttpStatus.BAD_REQUEST);
@@ -153,7 +151,7 @@ public class BaseUtil {
 		case COMPOSITION: {
 			if (!(SearchOperators.LIKE.getName().equals(operator)
 					|| SearchOperators.EQUALITY.getName().equals(operator))) {
-				logger.error("Please provide proper search params, composition will only support =lk= OR ==",
+				log.error("Please provide proper search params, composition will only support =lk= OR ==",
 						HttpStatus.BAD_REQUEST);
 				throw new CustomException(
 						"Please provide proper search params, composition will only support =lk= OR ==",
@@ -166,7 +164,7 @@ public class BaseUtil {
 		case LOCATION: {
 			if (!(SearchOperators.LIKE.getName().equals(operator)
 					|| SearchOperators.EQUALITY.getName().equals(operator))) {
-				logger.error("Please provide proper search params, location will only support =lk= OR ==",
+				log.error("Please provide proper search params, location will only support =lk= OR ==",
 						HttpStatus.BAD_REQUEST);
 				throw new CustomException("Please provide proper search params, location will only support =lk= OR ==",
 						HttpStatus.BAD_REQUEST);
@@ -176,7 +174,7 @@ public class BaseUtil {
 
 		}
 		default:
-			logger.error("Please Provide right search parameter . Like genericanme, brandName, company, composition, "
+			log.error("Please Provide right search parameter . Like genericanme, brandName, company, composition, "
 					+ "location, cretedBy, updatedBy, createdDate, updatedDate", HttpStatus.BAD_REQUEST);
 			throw new CustomException(
 					"Please Provide right search parameter . Like genericanme, brandName, company, composition, "
@@ -250,10 +248,9 @@ public class BaseUtil {
 
 	}
 
-	public static String remainingExpireTime(Date expiryDate) {
+	public static String remainingExpireTime(LocalDate expiryDate) {
 
-		LocalDate localDate = expiryDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-		LocalDate expDate = LocalDate.of(localDate.getYear(), localDate.getMonthValue(), localDate.getDayOfMonth());
+		LocalDate expDate = LocalDate.of(expiryDate.getYear(), expiryDate.getMonthValue(), expiryDate.getDayOfMonth());
 		LocalDate now = LocalDate.now();
 		Period diff = Period.between(expDate, now);
 
@@ -262,18 +259,17 @@ public class BaseUtil {
 
 	}
 
-	public static String getExpireStatus(Date expiryDate) {
+	public static String getExpireStatus(LocalDate expiryDate) {
 
 		String status = null;
-		if (expiryDate.before(new Date())) {
+		if (expiryDate.isBefore(LocalDate.now())) {
 			status = ExpireStatus.EXPIRED.toString();
-		} else if (expiryDate.after(new Date())) {
+		} else if (expiryDate.isAfter(LocalDate.now())) {
 			status = ExpireStatus.ABOUT_TO_EXPIRE.toString();
 		}
 		return status;
 	}
 
-	@SuppressWarnings("unused")
 	public static boolean isNullOrZero(final Object obj) {
 
 		if (null == obj)
@@ -295,21 +291,41 @@ public class BaseUtil {
 
 		if (obj instanceof String) {
 			String str = (String) obj;
-			if (str != null && !str.isEmpty()) {
-				return false;
-			} else {
-				return true;
-			}
+
+			return (str == null && str.isEmpty());
 
 		}
 		if (obj instanceof Date) {
 			Date date = (Date) obj;
-			if (date == null) {
-				return true;
-			} else {
-				return false;
-			}
+
+			return (date == null);
 		}
 		return false;
+
+	}
+
+	public static Float calculateGSTammount(Float originalCost, Float percentage) {
+
+		return (originalCost * percentage) / 100;
+
+	}
+
+	public static Float calculateGSTpercentage(Float gstAmmount, Float originalCost) {
+
+		return (gstAmmount * 100) / originalCost;
+
+	}
+
+	public static Float calculateNetPriceAfterGST(Float originalCost, Float percentage) {
+
+		return originalCost + calculateGSTammount(originalCost, percentage);
+	}
+
+	public static LocalDate convertToLocalDateTimeFromDate(Date dateToConvert) {
+		return dateToConvert.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+	}
+
+	public static Date convertToDateViaSqlDate(LocalDate dateToConvert) {
+		return java.sql.Date.valueOf(dateToConvert);
 	}
 }

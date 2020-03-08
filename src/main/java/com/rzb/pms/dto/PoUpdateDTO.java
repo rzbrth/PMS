@@ -14,15 +14,9 @@ import lombok.NoArgsConstructor;
 public class PoUpdateDTO {
 
 	private List<PoLineItemUpdateDTO> updateLineItems;
-	
-	private Integer distributerId;
-	
-	//private Integer poDrugId;
 
-	private Integer poId;
-	
+	private Integer distributerId;
+
 	private String poStatus;
-	
-	
 
 }

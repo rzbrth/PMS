@@ -1,6 +1,6 @@
 package com.rzb.pms.service;
 
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -12,7 +12,6 @@ import javax.servlet.http.HttpServletResponse;
 import javax.transaction.Transactional;
 import javax.validation.Valid;
 
-import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -29,7 +28,6 @@ import com.rzb.pms.dto.DrugSearchResponse;
 import com.rzb.pms.dto.ReportCategory;
 import com.rzb.pms.exception.CustomEntityNotFoundException;
 import com.rzb.pms.exception.CustomException;
-import com.rzb.pms.log.Log;
 import com.rzb.pms.model.Audit;
 import com.rzb.pms.model.Drug;
 import com.rzb.pms.model.QDrug;
@@ -43,6 +41,8 @@ import com.rzb.pms.utils.BaseUtil;
 import com.rzb.pms.utils.CollectionMapper;
 import com.rzb.pms.utils.ReportUtills;
 
+import lombok.extern.slf4j.Slf4j;
+
 /**
  * @author rajib.rath
  * @param <K>
@@ -50,13 +50,11 @@ import com.rzb.pms.utils.ReportUtills;
  */
 @Service
 @SuppressWarnings(value = { "unchecked", "unused", "rawtypes" })
+@Slf4j
 public class DrugService<K> {
 
 	@Autowired
 	private DrugRepository drugRepository;
-
-	@Log
-	private Logger logger;
 
 	@PersistenceContext
 	private EntityManager em;
@@ -88,8 +86,7 @@ public class DrugService<K> {
 		Page<Drug> drugData = drugRepository.findAll(pageable);
 
 		if (drugData.isEmpty()) {
-			logger.error("No drug available", HttpStatus.NOT_FOUND);
-			throw new CustomException("No drug available", HttpStatus.NOT_FOUND);
+			throw new CustomException("No drug available", HttpStatus.NO_CONTENT);
 		}
 
 		if (isExported) {
@@ -118,7 +115,6 @@ public class DrugService<K> {
 		Optional<Drug> drugData = drugRepository.findById(id);
 
 		if (!drugData.isPresent()) {
-			logger.error("No drug found for the given id:" + id);
 			throw new CustomEntityNotFoundException(Drug.class, "drugId", id);
 		}
 		Drug data = drugData.get();
@@ -153,10 +149,9 @@ public class DrugService<K> {
 		}
 		Page<Drug> drugs = drugRepository.findAll(spec, pageRequest);
 		if (drugs.isEmpty()) {
-			logger.error("No data available", HttpStatus.NOT_FOUND);
-			throw new CustomException("No data available", HttpStatus.NOT_FOUND);
+			throw new CustomException("No data available", HttpStatus.NO_CONTENT);
 		}
-		logger.info("Total Drug Record as per Search Criteria" + drugs.getContent().size());
+		log.info("Total Drug Record as per Search Criteria" + drugs.getContent().size());
 
 		return new DrugSearchResponse(
 				CollectionMapper.mapDrugToDrugAutoCompleteDTO(drugs.getContent(), stockRepository),
@@ -173,8 +168,8 @@ public class DrugService<K> {
 	public String addDrug(DrugDtoReqRes data) {
 
 		if (data == null) {
-			logger.error("Drug information can't be empty", HttpStatus.NOT_ACCEPTABLE);
-			throw new CustomException("Drug information can't be empty", HttpStatus.NOT_ACCEPTABLE);
+			log.error("Drug information can't be empty", HttpStatus.BAD_REQUEST);
+			throw new CustomException("Drug information can't be empty", HttpStatus.BAD_REQUEST);
 		}
 		try {
 			Query q = em
@@ -192,7 +187,7 @@ public class DrugService<K> {
 
 			try {
 				auditRepo.save(Audit.builder().auditType(AuditType.DRUG_CREATED.toString()).createdBy("")
-						.createdDate(new Date()).drugId(drugId).build());
+						.createdDate(LocalDate.now()).drugId(drugId).build());
 			} catch (Exception e) {
 				throw new CustomException("Problem while auditing drug info", e);
 			}
@@ -211,12 +206,12 @@ public class DrugService<K> {
 	 */
 	/*
 	 * public List<DrugDTO> getDrugByGenericId(String genericId, Pageable page) { if
-	 * (genericId == null) { logger.error("Generic Id can't be null",
+	 * (genericId == null) { log.error("Generic Id can't be null",
 	 * HttpStatus.BAD_REQUEST); throw new
 	 * CustomException("Generic Id can't be null", HttpStatus.BAD_REQUEST); } final
 	 * QDrug drugs = QDrug.drug; builder.and(drugs.genericId.eq(genericId));
 	 * Page<Drug> data = drugRepository.findAll(builder.getValue(), page); if (data
-	 * == null) { logger.error("Drug Details not found for the given generic Id",
+	 * == null) { log.error("Drug Details not found for the given generic Id",
 	 * HttpStatus.NOT_FOUND); throw new CustomEntityNotFoundException(Drug.class,
 	 * "genericId", genericId); }
 	 * 
@@ -234,7 +229,7 @@ public class DrugService<K> {
 	 */
 	public List<DrugDTO> getDrugByGenericName(String name, Pageable page) {
 		if (name == null) {
-			logger.error("Generic name can't be null", HttpStatus.BAD_REQUEST);
+			log.error("Generic name can't be null", HttpStatus.BAD_REQUEST);
 			throw new CustomException("Generic name can't be null", HttpStatus.BAD_REQUEST);
 		}
 
@@ -242,7 +237,7 @@ public class DrugService<K> {
 		builder.and(drugs.genericName.eq(name));
 		Page<Drug> data = drugRepository.findAll(builder.getValue(), page);
 		if (data == null) {
-			logger.error("Drug Details not found for the given generic name", HttpStatus.NOT_FOUND);
+			log.error("Drug Details not found for the given generic name", HttpStatus.NO_CONTENT);
 			throw new CustomEntityNotFoundException(Drug.class, "drugName", name);
 		}
 
@@ -258,7 +253,7 @@ public class DrugService<K> {
 	 */
 	public List<DrugDTO> getDrugByComposition(String composition, Pageable page) {
 		if (composition == null) {
-			logger.error("composition can't be null", HttpStatus.BAD_REQUEST);
+			log.error("composition can't be null", HttpStatus.BAD_REQUEST);
 			throw new CustomException("composition can't be null", HttpStatus.BAD_REQUEST);
 		}
 
@@ -266,7 +261,7 @@ public class DrugService<K> {
 		builder.and(drugs.composition.contains(composition));
 		Page<Drug> data = drugRepository.findAll(builder.getValue(), page);
 		if (data == null) {
-			logger.error("Drug Details not found for the given composition", HttpStatus.NOT_FOUND);
+			log.error("Drug Details not found for the given composition", HttpStatus.NOT_FOUND);
 			throw new CustomEntityNotFoundException(Drug.class, "composition", composition);
 		}
 
@@ -285,12 +280,12 @@ public class DrugService<K> {
 	public String updateDrugData(DrugDtoReqRes drugData, String drugId) {
 
 		if (drugId == null) {
-			logger.error("Drug Id can't be null", HttpStatus.BAD_REQUEST);
+			log.error("Drug Id can't be null", HttpStatus.BAD_REQUEST);
 			throw new CustomException("Drug Id can't be null", HttpStatus.BAD_REQUEST);
 		}
 		Drug data = drugRepository.findById(drugId).get();
 		if (data == null) {
-			logger.error("Drug Details not found", HttpStatus.NOT_FOUND);
+			log.error("Drug Details not found", HttpStatus.NOT_FOUND);
 			throw new CustomEntityNotFoundException(Drug.class, "drugId", drugId);
 		}
 		try {
@@ -302,16 +297,25 @@ public class DrugService<K> {
 			drugRepository.saveAndFlush(record);
 			try {
 				auditRepo.save(Audit.builder().auditType(AuditType.DRUG_UPDATED.toString()).updatedBy("")
-						.updatedDate(new Date()).drugId(record.getDrugId()).build());
+						.updatedDate(LocalDate.now()).drugId(record.getDrugId()).build());
 			} catch (Exception e) {
 				throw new CustomException("Problem while auditing drug info", e);
 			}
 			return "Drug info updated successfully";
 		} catch (Exception e) {
-			logger.error("Problem while adding drug, Please try again", e.getCause());
+			log.error("Problem while adding drug, Please try again", e.getCause());
 			throw new CustomException("Drug information can't be empty", e.getCause());
 		}
 
+	}
+
+	public DrugDTO getdrugByName(@Valid String brandName) {
+
+		if (brandName == null) {
+			log.error("Brand name can't be null", HttpStatus.BAD_REQUEST);
+		}
+
+		return drugRepository.findByBrandName(brandName);
 	}
 
 }

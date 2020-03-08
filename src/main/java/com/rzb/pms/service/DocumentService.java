@@ -1,15 +1,12 @@
 package com.rzb.pms.service;
 
-import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
-import com.rzb.pms.log.Log;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
+@Slf4j
 public class DocumentService {
-
-	@Log
-	Logger logger;
 
 	public void printInvoice() {
 		// TODO Auto-generated method stub
