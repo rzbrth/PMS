@@ -14,12 +14,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
-import com.rzb.pms.dto.ExportType;
-import com.rzb.pms.dto.RequestStatus;
-import com.rzb.pms.exception.CustomException;
+import com.rzb.pms.model.Distributer;
 import com.rzb.pms.model.PoLineItems;
 import com.rzb.pms.model.PurchaseOrder;
+import com.rzb.pms.model.enums.RequestStatus;
 import com.rzb.pms.repository.DistributerRepository;
 import com.rzb.pms.repository.PoLineItemsRepository;
 import com.rzb.pms.repository.PurchaseOrderRepository;
@@ -61,12 +61,13 @@ public class EmailService {
 			helper.setSubject(emailData.get("Subject"));
 			helper.setText(htmlTextEmail.getText(), htmlTextEmail.getHtml());
 			helper.setFrom(emailData.get("From"));
-			log.info("Sending mail from: " + emailData.get("From") + " to: " + String.join(",", emailData.get("To")));
+			log.info("Sending mail from : {}, to : {}", emailData.get("From"), String.join(",", emailData.get("To")));
 			emailSender.send(message);
-			log.info("Mail sent to " + String.join(",", emailData.get("To")) + "from: " + emailData.get("From"));
+			log.info("Mail sent to : {} , from : {}", String.join(",", emailData.get("To")), emailData.get("From"));
 			return "Mail send Successfully";
 		} catch (Exception e) {
-			throw new CustomException("Problem while sending email", e);
+			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Problem while sending email", e);
+
 		}
 
 	}
@@ -84,15 +85,25 @@ public class EmailService {
 			Integer poId = data;
 			int count = 1;
 			if (poId == null) {
-				throw new CustomException("Po Id can't be nul", HttpStatus.BAD_REQUEST);
+				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Po Id can't be null");
+
 			}
 
-			PurchaseOrder pd = orderRepository.findById(poId).get();
+			PurchaseOrder pd = orderRepository.findById(poId).orElse(null);
 
+			if (pd == null) {
+				throw new ResponseStatusException(HttpStatus.NO_CONTENT, "No order found for given po id : " + poId);
+			}
 			if (pd.getPoStatus().equalsIgnoreCase(RequestStatus.PROCESSED.toString())) {
-				throw new CustomException("Order already processed", HttpStatus.BAD_REQUEST);
+				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Order already processed");
+
 			}
-			emailTo = distributerRepository.findById(pd.getDistributerId()).get().getEmail();
+			Distributer distData = distributerRepository.findById(pd.getDistributerId()).orElse(null);
+			if (distData == null) {
+				throw new ResponseStatusException(HttpStatus.NO_CONTENT,
+						"Distributer info not found for id : " + pd.getDistributerId());
+			}
+			emailTo = distData.getEmail();
 			List<PoLineItems> items = itemsRepository.findByPoId(poId);
 
 			TableConfig table = EmailTemplateBuilder.builder().header("Purchase Order").and()
@@ -109,11 +120,9 @@ public class EmailService {
 					.copyright("pill-H").url("https://www.pillh.io").build();
 
 			mailData.put("Subject", "Purchase Order");
-			
+
 		case "EMAIL_SELL_INVOICE":
-			
-			
-			
+
 		}
 
 		mailData.put("To", emailTo);

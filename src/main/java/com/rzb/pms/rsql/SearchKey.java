@@ -1,8 +1,7 @@
 package com.rzb.pms.rsql;
 
 import org.springframework.http.HttpStatus;
-
-import com.rzb.pms.exception.CustomException;
+import org.springframework.web.server.ResponseStatusException;
 
 public enum SearchKey {
 
@@ -33,9 +32,8 @@ public enum SearchKey {
 			return LOCATION;
 
 		} else {
-			throw new CustomException(
-					"Please Provide right Search parameter . Like genericName, brandName, composition, company, location",
-					HttpStatus.BAD_REQUEST);
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+					"Please Provide right Search parameter . Like genericName, brandName, composition, company, location");
 		}
 
 	}

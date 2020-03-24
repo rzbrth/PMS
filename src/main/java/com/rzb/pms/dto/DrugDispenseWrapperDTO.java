@@ -25,6 +25,8 @@ public class DrugDispenseWrapperDTO {
 	
 	private String paymentMode;
 	
+	//private Integer customerId;
+	
 	
 	
 }

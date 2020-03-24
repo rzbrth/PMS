@@ -46,4 +46,15 @@ public class PoDrugDTO {
 		this.poDrugId = data.getPoDrugId();
 		this.poId = data.getPoId();
 	}
+	
+	public PoDrugDTO(PoDrugDTO data) {
+		this.distributerId = data.getDistributerId();
+		this.drugDescription = data.getDrugDescription();
+		this.drugId = data.getDrugId();
+		this.drugName = data.getDrugName();
+		this.drugPrice = data.getDrugPrice();
+		this.drugQuantity = data.getDrugQuantity();
+		this.poDrugId = data.getPoDrugId();
+		this.poId = data.getPoId();
+	}
 }

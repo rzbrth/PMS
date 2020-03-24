@@ -17,19 +17,15 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class DrugDispense {
+public class DispenseLineItems {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.SEQUENCE)
-	private Integer dispenseId;
+	private Integer dispenseLineItemId;
 
 	private String mobileNumber;
 
 	private String drugId;
-
-	private String genericName;
-
-	private String composition;
 
 	private String brandName;
 
@@ -62,5 +58,7 @@ public class DrugDispense {
 	private String customerName;
 
 	private String sellInvoiceNumber;
+
+	private Integer dispenseId;
 
 }

@@ -40,15 +40,14 @@ public class PurchaseOrderController {
 	@Autowired
 	private PurchaseOrderService orderService;
 
-
 	@PreAuthorize("hasAnyAuthority('ADMIN', 'USER')")
 	@GetMapping
 	@ApiOperation("Get all purchase order")
 	public ResponseEntity<ResponseSchema<List<PurchaseOrderResponse>>> getAllPO(
 			@ApiParam(value = "Page No", required = true) @RequestParam(defaultValue = "0") Integer page,
 			@ApiParam(value = "Page Size", required = true) @RequestParam(defaultValue = "10") Integer size,
-			@RequestParam(defaultValue = "createdDate:DESC", required = false) String sort,
-			@ApiParam(value = "Search Param", required = false) @RequestParam(defaultValue = "findall") String search) {
+			@ApiParam(value = "Sort", required = false) @RequestParam(defaultValue = "createdDate:DESC", required = false) String sort,
+			@ApiParam(value = "Search Param", required = false) @RequestParam(required = false) String search) {
 
 		log.info("Search Parameter: " + search);
 		log.info("Sort Parameter: " + sort);

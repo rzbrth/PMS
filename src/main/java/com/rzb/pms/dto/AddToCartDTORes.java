@@ -30,14 +30,6 @@ public class AddToCartDTORes {
 	private Double avlQntyWhole;
 	
 	private Double avlQntyTrimmed;
-	
-	private Double requestedQntyWhole;
-	
-	private Double reqQntyTrimmed;
-	
-	private String genericName;
-
-	private String composition;
 
 	private String brandName;
 	

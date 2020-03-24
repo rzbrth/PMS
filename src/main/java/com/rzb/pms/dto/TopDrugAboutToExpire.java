@@ -1,6 +1,6 @@
 package com.rzb.pms.dto;
 
-import com.rzb.pms.model.Stock;
+import com.rzb.pms.projection.StockProjection;
 import com.rzb.pms.utils.BaseUtil;
 
 import lombok.AllArgsConstructor;
@@ -20,7 +20,7 @@ public class TopDrugAboutToExpire {
 
 	private String expireTimeLeft;
 
-	public TopDrugAboutToExpire(Stock s) {
+	public TopDrugAboutToExpire(StockProjection s) {
 
 		this.drugName = s.getDrugName();
 		this.stockId = s.getStockId();

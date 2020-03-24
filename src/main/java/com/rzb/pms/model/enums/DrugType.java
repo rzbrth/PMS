@@ -1,8 +1,7 @@
-package com.rzb.pms.dto;
+package com.rzb.pms.model.enums;
 
 import org.springframework.http.HttpStatus;
-
-import com.rzb.pms.exception.CustomException;
+import org.springframework.web.server.ResponseStatusException;
 
 public enum DrugType {
 
@@ -37,7 +36,7 @@ public enum DrugType {
 			return INHALATION;
 
 		} else {
-			throw new CustomException("Please Provide right parameter", HttpStatus.BAD_REQUEST);
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Please Provide right parameter");
 		}
 
 	}

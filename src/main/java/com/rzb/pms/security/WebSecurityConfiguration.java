@@ -27,7 +27,10 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
 	private final JwtAuthenticationEntryPoint unauthorizedHandler;
 	private final JwtTokenUtil jwtTokenUtil;
 	private final JwtUserDetailsService jwtUserDetailsService;
-
+	private static final String[] AUTH_WHITELIST = { "/swagger-resources/**", "/swagger-ui.html", "/v2/api-docs",
+			"/webjars/**", "/api/v1/auth", "/api/v1/auth/refresh", "/api/v1/auth/blacklist", "/api/v1/user/signup",
+			"/api/v1/user/reset-password", "/api/v1/user/verify" };
+	
 	@Value("${jwt.header}")
 	private String tokenHeader;
 
@@ -56,10 +59,6 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
 	public AuthenticationManager authenticationManagerBean() throws Exception {
 		return super.authenticationManagerBean();
 	}
-
-	private static final String[] AUTH_WHITELIST = { "/swagger-resources/**", "/swagger-ui.html", "/v2/api-docs",
-			"/webjars/**", "/api/v1/auth", "/api/v1/auth/refresh", "/api/v1/auth/blacklist", "/api/v1/user/signup",
-			"/api/v1/user/reset-password", "/api/v1/user/verify" };
 
 	@Override
 	protected void configure(HttpSecurity httpSecurity) throws Exception {

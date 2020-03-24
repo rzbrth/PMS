@@ -8,25 +8,21 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.rzb.pms.config.ResponseSchema;
 import com.rzb.pms.dto.AddToCartWrapperReq;
 import com.rzb.pms.dto.AddToCartWrapperRes;
 import com.rzb.pms.dto.DrugDispenseWrapperDTO;
-import com.rzb.pms.exception.CustomException;
 import com.rzb.pms.service.DrugDispensingService;
 import com.rzb.pms.utils.Endpoints;
 import com.rzb.pms.utils.ResponseUtil;
 
 import io.swagger.annotations.ApiOperation;
-import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping(Endpoints.VERSION_1 + Endpoints.SELL)
-@Slf4j
 public class DrugDispenseController {
-
-	
 
 	@Autowired
 	private DrugDispensingService cartService;
@@ -38,8 +34,7 @@ public class DrugDispenseController {
 			@RequestBody AddToCartWrapperReq wrapper) {
 
 		if (wrapper == null) {
-			log.error("Line Items can't be empty", HttpStatus.BAD_REQUEST);
-			throw new CustomException("Line Items can't be empty", HttpStatus.BAD_REQUEST);
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Line Items can't be empty");
 		}
 		return new ResponseEntity<>(ResponseUtil.buildSuccessResponse(cartService.addToCard(wrapper),
 				new ResponseSchema<AddToCartWrapperRes>()), HttpStatus.OK);
@@ -51,8 +46,8 @@ public class DrugDispenseController {
 	public ResponseEntity<ResponseSchema<String>> dispenseDrug(@RequestBody DrugDispenseWrapperDTO wrapper) {
 
 		if (wrapper == null) {
-			log.error("Line Items can't be empty", HttpStatus.BAD_REQUEST);
-			throw new CustomException("Line Items can't be empty", HttpStatus.BAD_REQUEST);
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Line Items can't be empty");
+
 		}
 		return new ResponseEntity<>(
 				ResponseUtil.buildSuccessResponse(cartService.drugDispense(wrapper), new ResponseSchema<String>()),

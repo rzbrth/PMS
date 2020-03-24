@@ -13,7 +13,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 
-import com.rzb.pms.dto.UserTokenType;
+import com.rzb.pms.model.enums.UserTokenType;
 import com.rzb.pms.utils.BaseUtil;
 
 import lombok.AllArgsConstructor;

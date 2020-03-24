@@ -1,4 +1,4 @@
-package com.rzb.pms.dto;
+package com.rzb.pms.model.enums;
 
 public enum UserTokenType {
 

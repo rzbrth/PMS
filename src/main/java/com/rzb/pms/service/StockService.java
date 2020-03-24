@@ -4,6 +4,7 @@ import static io.github.perplexhub.rsql.RSQLQueryDslSupport.toPredicate;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -14,27 +15,28 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
-import com.rzb.pms.dto.AuditType;
+import com.google.common.base.Strings;
 import com.rzb.pms.dto.ExpiredItemReturnReq;
 import com.rzb.pms.dto.ExpiredItemReturnWrapper;
 import com.rzb.pms.dto.PoDrugDTO;
 import com.rzb.pms.dto.PurchaseOrderResponse;
-import com.rzb.pms.dto.ReferenceType;
-import com.rzb.pms.dto.ReportCategory;
-import com.rzb.pms.dto.RequestStatus;
 import com.rzb.pms.dto.StockDirectRequestDTO;
 import com.rzb.pms.dto.StockDirectRequestDTOWrapper;
 import com.rzb.pms.dto.StockResponseDto;
-import com.rzb.pms.dto.StockType;
 import com.rzb.pms.dto.TopDrugAboutToExpire;
-import com.rzb.pms.exception.CustomEntityNotFoundException;
-import com.rzb.pms.exception.CustomException;
 import com.rzb.pms.model.Audit;
 import com.rzb.pms.model.Drug;
 import com.rzb.pms.model.ExpiredItemReturn;
 import com.rzb.pms.model.QStock;
 import com.rzb.pms.model.Stock;
+import com.rzb.pms.model.enums.AuditType;
+import com.rzb.pms.model.enums.ReferenceType;
+import com.rzb.pms.model.enums.ReportCategory;
+import com.rzb.pms.model.enums.RequestStatus;
+import com.rzb.pms.model.enums.StockType;
+import com.rzb.pms.projection.StockProjection;
 import com.rzb.pms.repository.AuditRepository;
 import com.rzb.pms.repository.DistributerRepository;
 import com.rzb.pms.repository.DrugRepository;
@@ -67,11 +69,12 @@ public class StockService<K> {
 
 	private ReportUtills report = new ReportUtills();
 
+	@Transactional
 	public String addStockWithoutPR(StockDirectRequestDTOWrapper item) {
 
 		String invoiceRefNum = null;
 		if (item == null) {
-			throw new CustomException("Stock data can't be empty", HttpStatus.BAD_REQUEST);
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Stock data can't be empty");
 		}
 		try {
 
@@ -83,32 +86,36 @@ public class StockService<K> {
 					invoiceRefNum = item.getPurchaseInvoiceNumber();
 				}
 				repository.save(Stock.builder().avlQntyWhole(lineItem.getAvlQntyWhole())
-						.avlQntyTrimmed(lineItem.getPacking() * lineItem.getAvlQntyWhole()).createddBy("")
-						.expiryDate(lineItem.getExpiryDate())
+						.avlQntyTrimmed(lineItem.getPacking() * lineItem.getAvlQntyWhole())
+						.createddBy(BaseUtil.getLoggedInuserName()).expiryDate(lineItem.getExpiryDate())
 						// .genericId(lineItem.getGenericId())
 						.location(lineItem.getLocation()).mrp(lineItem.getMrp()).packing(lineItem.getPacking())
 						.stockCreatedAt(LocalDate.now()).unitPrice(lineItem.getMrp() / lineItem.getPacking())
 						.drugId(lineItem.getDrugId()).invoiceReference(invoiceRefNum)
 						.stockType(StockType.DIRECT.toString()).distributerId(lineItem.getDistributerId())
-						.drugName(drugRepository.findById(lineItem.getDrugId()).get().getBrandName()).build());
+						.drugName(drugRepository.findById(lineItem.getDrugId()).orElse(null).getBrandName()).build());
+				// Auditing
 				try {
-					auditRepo.save(Audit.builder().auditType(AuditType.STOCK_IN_DIRECT.toString()).createdBy("")
-							.createdDate(LocalDate.now()).drugId(lineItem.getDrugId()).build());
+					auditRepo.save(Audit.builder().auditType(AuditType.STOCK_IN_DIRECT.toString())
+							.createdBy(BaseUtil.getLoggedInuserName()).createdDate(LocalDate.now())
+							.drugId(lineItem.getDrugId()).build());
 				} catch (Exception e) {
-					throw new CustomException("Problem while auditing direct stock creation", e);
+					throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+							"Problem while auditing direct stock creation", e);
 				}
 			}
 			return "Stock created Successfully";
 		} catch (Exception e) {
-			throw new CustomException("problem occured while creating stock", e);
+			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "problem occured while creating stock",
+					e);
 		}
 	}
 
+	@Transactional
 	public String addStockFromPR(PurchaseOrderResponse po) {
 
 		if (po == null) {
-			log.error("Stock data can't be empty");
-			throw new CustomException("Stock data can't be empty", HttpStatus.BAD_REQUEST);
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Stock data can't be empty");
 		}
 		try {
 
@@ -116,28 +123,36 @@ public class StockService<K> {
 			List<Stock> s = repository.findByPoId(po.getPoId());
 
 			if (!s.isEmpty()) {
-				throw new CustomException("Stock for the po(" + "PO_ID=" + po.getPoId() + ") already Created by: "
-						+ po.getCreatedBy() + " On " + po.getCreatedDate(), HttpStatus.BAD_REQUEST);
+				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Stock for the po(" + "PO_ID=" + po.getPoId()
+						+ ") already Created by: " + po.getCreatedBy() + " On " + po.getCreatedDate());
 			} else {
 				if (po.getPoStatus().equalsIgnoreCase(RequestStatus.PROCESSED.toString())) {
 					for (PoDrugDTO stock : po.getPoLineItem()) {
 
-						Drug drugData = drugRepository.findById(stock.getDrugId()).get();
+						Drug drugData = drugRepository.findById(stock.getDrugId()).orElse(null);
+						if (drugData == null) {
+							throw new ResponseStatusException(HttpStatus.NO_CONTENT,
+									"No stock aavailable for drug id : " + stock.getDrugId());
+						}
 
 						repository.save(Stock.builder().avlQntyWhole(stock.getDrugQuantity())
-								.avlQntyTrimmed(drugData.getPacking() * stock.getDrugQuantity()).createddBy("")
-								.stockCreatedAt(LocalDate.now()).expiryDate(LocalDate.now())
+								.avlQntyTrimmed(drugData.getPacking() * stock.getDrugQuantity())
+								.createddBy(BaseUtil.getLoggedInuserName()).stockCreatedAt(LocalDate.now())
+								.expiryDate(LocalDate.now())
 								// .genericId(drugData.getGenericId())
 								.location(stock.getLocation()).mrp(stock.getDrugPrice()).packing(drugData.getPacking())
 								.stockCreatedAt(LocalDate.now()).unitPrice(stock.getDrugPrice() / drugData.getPacking())
 								.drugId(stock.getDrugId()).stockType(StockType.FROM_PO.toString())
 								.distributerId(stock.getDistributerId()).poId(po.getPoId())
 								.invoiceReference(po.getReferenceNumber()).drugName(drugData.getBrandName()).build());
+						// Auditing
 						try {
 							auditRepo.save(Audit.builder().auditType(AuditType.STOCK_IN_FROM_PO.toString())
-									.createdBy("").createdDate(LocalDate.now()).drugId(drugData.getDrugId()).build());
+									.createdBy(BaseUtil.getLoggedInuserName()).createdDate(LocalDate.now())
+									.drugId(drugData.getDrugId()).build());
 						} catch (Exception e) {
-							throw new CustomException("Problem while auditing stock creation from po", e);
+							throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+									"Problem while auditing stock creation from po", e);
 						}
 					}
 				} else {
@@ -149,19 +164,19 @@ public class StockService<K> {
 			}
 
 		} catch (Exception e) {
-			log.error("problem occured while creating stock", e);
-			throw new CustomException("problem occured while creating stock", e);
+			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "problem occured while creating stock",
+					e);
 		}
 	}
 
 	public StockResponseDto getStockById(Integer stockId) {
 
 		if (stockId == null) {
-			throw new CustomException("Stock Id can't be empty", HttpStatus.BAD_REQUEST);
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Stock Id can't be empty");
 		}
-		Stock r = repository.findById(stockId).get();
+		Stock r = repository.findById(stockId).orElse(null);
 		if (r == null) {
-			throw new CustomEntityNotFoundException(Stock.class, "StockId", stockId.toString());
+			throw new ResponseStatusException(HttpStatus.NO_CONTENT, "No stock found for id : " + stockId);
 		}
 
 		return StockResponseDto.builder().avlQntyTrimmed(r.getAvlQntyTrimmed()).avlQntyWhole(r.getAvlQntyWhole())
@@ -183,7 +198,7 @@ public class StockService<K> {
 		if (isExported) {
 
 			try {
-				if (filter == null || filter.isEmpty()) {
+				if (Strings.isNullOrEmpty(filter)) {
 					stockInfo = repository.findAll(pageRequest).getContent();
 				} else {
 					stockInfo = repository.findAll(toPredicate(filter, QStock.stock), pageRequest).getContent();
@@ -193,18 +208,21 @@ public class StockService<K> {
 						stockInfo.stream().map(x -> new StockResponseDto(x)).collect(Collectors.toList()));
 				return data;
 			} catch (Exception e) {
-				throw new CustomException("Problem while exporting stock info to :--<< (" + exportType
-						+ ")-->> \"+\"\\t\"+\"exception occured-->", e);
+
+				throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+						"Problem while exporting stock info to :--<< (" + exportType
+								+ ")-->> \"+\"\\t\"+\"exception occured-->",
+						e);
 			}
 		}
 
-		if (filter == null || filter.isEmpty()) {
+		if (Strings.isNullOrEmpty(filter)) {
 			stockInfo = repository.findAll(pageRequest).getContent();
 		} else {
 			stockInfo = repository.findAll(toPredicate(filter, QStock.stock), pageRequest).getContent();
 		}
 		if (stockInfo.isEmpty()) {
-			throw new CustomException("No Stock available", HttpStatus.NOT_FOUND);
+			throw new ResponseStatusException(HttpStatus.NO_CONTENT, "No Stock available");
 		}
 		return (List<K>) stockInfo.stream().map(x -> new StockResponseDto(x)).collect(Collectors.toList());
 
@@ -214,12 +232,11 @@ public class StockService<K> {
 
 		if (stockId == null) {
 
-			throw new CustomException("Stock Id can not be null or empty", HttpStatus.BAD_REQUEST);
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Stock Id can not be null or empty");
 		}
-		Stock r = repository.findById(stockId).get();
-
+		Stock r = repository.findById(stockId).orElse(null);
 		if (r == null) {
-			throw new CustomEntityNotFoundException(Stock.class, "StockId", stockId.toString());
+			throw new ResponseStatusException(HttpStatus.NO_CONTENT, "No stock found for id : " + stockId);
 		}
 
 		return StockResponseDto.builder().avlQntyTrimmed(r.getAvlQntyTrimmed()).avlQntyWhole(r.getAvlQntyWhole())
@@ -234,8 +251,15 @@ public class StockService<K> {
 
 	public List<TopDrugAboutToExpire> checkForAboutToExpireItem() {
 
-		return repository.findTopDrugAboutToExpire().stream().map(x -> new TopDrugAboutToExpire(x))
-				.collect(Collectors.toList());
+		List<StockProjection> data = repository.findTopDrugAboutToExpire();
+		if (data.isEmpty()) {
+			log.debug("No expired drug information found");
+			return Collections.EMPTY_LIST;
+		}
+		for (StockProjection s : data) {
+			log.debug("Id, Name, ExpDate: {},{},{}", s.getDrugName(), s.getExpiryDate());
+		}
+		return data.stream().map(x -> new TopDrugAboutToExpire(x)).collect(Collectors.toList());
 	}
 
 	@Transactional
@@ -249,7 +273,8 @@ public class StockService<K> {
 	public String emptyExpiredStock(ExpiredItemReturnWrapper wrapper) {
 
 		if (wrapper == null) {
-			throw new CustomException("Expired Stock return request data can't be empty", HttpStatus.BAD_REQUEST);
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+					"Expired Stock return request data can't be empty");
 		}
 
 		for (ExpiredItemReturnReq re : wrapper.getRe()) {
@@ -266,9 +291,9 @@ public class StockService<K> {
 
 				auditRepo.save(Audit.builder().auditType(AuditType.EXPIRED_STOCK_RETURN.toString())
 						.drugId(re.getDrugId()).poId(re.getPoId()).returnId(data.getReturnId()).stockId(re.getStockId())
-						.createdBy("").createdDate(LocalDate.now()).build());
+						.createdBy(BaseUtil.getLoggedInuserName()).createdDate(LocalDate.now()).build());
 			} catch (Exception e) {
-				throw new CustomException(
+				throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
 						"Problem while creating return request for expired item:- StockId = " + re.getStockId(), e);
 			}
 
@@ -278,21 +303,24 @@ public class StockService<K> {
 
 	}
 
+	@Transactional
 	public String deleteStockById(Integer stockId) {
 
 		if (stockId == null || stockId == 0) {
-			throw new CustomException("Stock Id can't be null or zeo", HttpStatus.BAD_REQUEST);
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Stock Id can't be null or zeo");
 		}
-		Stock stock = repository.findById(stockId).get();
+		Stock stock = repository.findById(stockId).orElse(null);
 		if (stock == null) {
-			throw new CustomEntityNotFoundException(Stock.class, "Stock Id", stockId.toString());
+			throw new ResponseStatusException(HttpStatus.NO_CONTENT, "No stock found for id : " + stockId);
 		}
 		try {
 			repository.deleteById(stockId);
+			// Auditing
 			auditRepo.save(Audit.builder().auditType(AuditType.STOCK_DELETED.toString()).drugId(stock.getDrugId())
-					.poId(stock.getPoId()).updatedBy("").updatedDate(LocalDate.now()).build());
+					.poId(stock.getPoId()).updatedBy(BaseUtil.getLoggedInuserName()).updatedDate(LocalDate.now())
+					.build());
 		} catch (Exception e) {
-			throw new CustomException("Problem while deleting stock:--" + "Stock Id = " + stockId, e);
+			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Exception occured", e);
 		}
 
 		return "Stock Deleted Successfully";

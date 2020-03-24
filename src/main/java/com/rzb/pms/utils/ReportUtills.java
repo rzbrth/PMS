@@ -1,6 +1,8 @@
 package com.rzb.pms.utils;
 
 import java.io.FileOutputStream;
+import java.time.LocalDate;
+import java.time.Month;
 import java.util.List;
 
 import javax.servlet.http.HttpServletResponse;
@@ -14,18 +16,14 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.rzb.pms.dto.DrugDTO;
 import com.rzb.pms.dto.StockResponseDto;
-import com.rzb.pms.exception.CustomException;
 
 public class ReportUtills<K> {
-
-	private static final Logger logger = LoggerFactory.getLogger(ReportUtills.class);
 
 	@SuppressWarnings("unchecked")
 	public ResponseEntity<K> generateReport(HttpServletResponse response, String exportTpe, String reportCategory,
@@ -113,14 +111,14 @@ public class ReportUtills<K> {
 					return (ResponseEntity<K>) ResponseEntity.ok().body(response);
 
 				} catch (Exception e) {
-					throw new CustomException("Problem while Creating report in excel format :", e.getCause());
+					throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+							"Problem while Creating report in excel format :", e);
 				}
 			}
 
 			default:
-				throw new CustomException(
-						"Please Provide proper export request ===>>" + "Export request:(" + exportTpe + ") not exist",
-						HttpStatus.BAD_REQUEST);
+				throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+						"Please Provide proper export request ===>>" + "Export request:(" + exportTpe + ") not exist");
 			}
 
 		}
@@ -144,8 +142,11 @@ public class ReportUtills<K> {
 					headerFont.setColor(IndexedColors.BLUE.getIndex());
 
 					// Create a CellStyle with the font
-					CellStyle headerCellStyle = workbook.createCellStyle();
-					headerCellStyle.setFont(headerFont);
+					CellStyle cellStyle = workbook.createCellStyle();
+					cellStyle.setFont(headerFont);
+					// Create Cell Style for formatting Date
+					CellStyle dateCellStyle = workbook.createCellStyle();
+					dateCellStyle.setDataFormat(createHelper.createDataFormat().getFormat("dd-MM-yyyy HH:MM"));
 
 					// Create a Row
 					Row headerRow = sheet.createRow(0);
@@ -158,7 +159,7 @@ public class ReportUtills<K> {
 					for (int i = 0; i < header.length; i++) {
 						Cell cell = headerRow.createCell(i);
 						cell.setCellValue(header[i]);
-						cell.setCellStyle(headerCellStyle);
+						cell.setCellStyle(cellStyle);
 					}
 					// add data to csv
 					int rowNum = 1;
@@ -173,25 +174,41 @@ public class ReportUtills<K> {
 								.setCellValue(BaseUtil.isNullOrZero(z.getAvlQntyTrimmed()) ? 0 : z.getAvlQntyTrimmed());
 						row.createCell(3).setCellValue(BaseUtil.isNullOrZero(z.getPacking()) ? 0 : z.getPacking());
 						row.createCell(4).setCellValue(BaseUtil.isNullOrZero(z.getDrugId()) ? null : z.getDrugId());
-						row.createCell(5)
-								.setCellValue(BaseUtil.isNullOrZero(z.getExpireDate()) ? null : z.getExpireDate());
+
+						Cell expiryDate = row.createCell(5);
+
+						expiryDate.setCellValue(
+								BaseUtil.isNullOrZero(z.getExpireDate()) ? LocalDate.of(2000, Month.JANUARY, 1)
+										: z.getExpireDate());
+						expiryDate.setCellStyle(dateCellStyle);
+
 						row.createCell(6).setCellValue(BaseUtil.isNullOrZero(z.getMrp()) ? 0 : z.getMrp());
 						row.createCell(7).setCellValue(BaseUtil.isNullOrZero(z.getLocation()) ? null : z.getLocation());
 						row.createCell(8)
 								.setCellValue(BaseUtil.isNullOrZero(z.getCreateddBy()) ? null : z.getCreateddBy());
-						row.createCell(9).setCellValue(
-								BaseUtil.isNullOrZero(z.getStockCreatedAt()) ? null : z.getStockCreatedAt());
+
+						Cell stockCreatedAt = row.createCell(9);
+						stockCreatedAt.setCellValue(
+								BaseUtil.isNullOrZero(z.getStockCreatedAt()) ? LocalDate.of(2000, Month.JANUARY, 1)
+										: z.getStockCreatedAt());
+						stockCreatedAt.setCellStyle(dateCellStyle);
+
 						row.createCell(10)
 								.setCellValue(BaseUtil.isNullOrZero(z.getUpdatedBy()) ? null : z.getUpdatedBy());
-						row.createCell(11).setCellValue(
-								BaseUtil.isNullOrZero(z.getStockUpdatedAt()) ? null : z.getStockUpdatedAt());
+						Cell stockUpdatedAt = row.createCell(11);
+
+						stockUpdatedAt.setCellValue(
+								BaseUtil.isNullOrZero(z.getStockUpdatedAt()) ? LocalDate.of(2000, Month.JANUARY, 1)
+										: z.getStockUpdatedAt());
+						stockUpdatedAt.setCellStyle(dateCellStyle);
+
 						row.createCell(12).setCellValue(
 								BaseUtil.isNullOrZero(z.getInvoiceReference()) ? null : z.getInvoiceReference());
 						row.createCell(13)
 								.setCellValue(BaseUtil.isNullOrZero(z.getDistributerId()) ? 0 : z.getDistributerId());
 						row.createCell(14).setCellValue(BaseUtil.isNullOrZero(z.getPoId()) ? 0 : z.getPoId());
-						row.createCell(15).setCellValue(BaseUtil.isNullOrZero(z.getExpireStatus()) ? null : z.getExpireStatus());
-
+						row.createCell(15)
+								.setCellValue(BaseUtil.isNullOrZero(z.getExpireStatus()) ? null : z.getExpireStatus());
 
 					}
 
@@ -214,21 +231,18 @@ public class ReportUtills<K> {
 					return (ResponseEntity<K>) ResponseEntity.ok().body(response);
 
 				} catch (Exception e) {
-					logger.error("Problem while exporting data in excel format:" + e);
-					throw new CustomException("Problem while Creating report in excel format :", e.getCause());
+					throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+							"Problem while Creating report in excel format :", e);
 				}
 			}
 
 			default:
-				throw new CustomException(
-						"Please Provide proper export request ===>>" + "Export request:(" + exportTpe + ") not exist",
-						HttpStatus.BAD_REQUEST);
+				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Please Provide proper export request");
 			}
 		}
 		default:
 
-			throw new CustomException("Please Provide proper report category ===>>" + "Report category:("
-					+ reportCategory + ") not exist", HttpStatus.BAD_REQUEST);
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Please Provide proper report category");
 		}
 
 	}

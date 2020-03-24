@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.rzb.pms.config.ResponseSchema;
 import com.rzb.pms.dto.ExpiredItemReturnWrapper;
@@ -26,7 +27,6 @@ import com.rzb.pms.dto.PurchaseOrderResponse;
 import com.rzb.pms.dto.StockDirectRequestDTOWrapper;
 import com.rzb.pms.dto.StockResponseDto;
 import com.rzb.pms.dto.TopDrugAboutToExpire;
-import com.rzb.pms.exception.CustomException;
 import com.rzb.pms.service.StockService;
 import com.rzb.pms.utils.BaseUtil;
 import com.rzb.pms.utils.Endpoints;
@@ -45,7 +45,6 @@ public class StockController {
 	@SuppressWarnings("rawtypes")
 	@Autowired
 	private StockService service;
-
 
 	/*
 	 * Create stock directly
@@ -87,24 +86,24 @@ public class StockController {
 	 * are ASC or DSC
 	 */
 	@PreAuthorize("hasAnyAuthority('ADMIN', 'USER')")
-	@GetMapping(Endpoints.GET_ALL_STOCK_WITH_EXPORT_OPTION)
+	@GetMapping
 	@ApiOperation("Find all stock with export option")
 	public ResponseEntity<ResponseSchema<List<StockResponseDto>>> findAllStockWithExportOption(
 			@ApiParam(value = "Sort patameter", required = false) @Valid @RequestParam(defaultValue = "expiryDate:DESC") String sort,
 			@ApiParam(value = "Page Number", required = false) @RequestParam(defaultValue = "1") Integer page,
 			@ApiParam(value = "Page Size") @RequestParam(defaultValue = "10") Integer size,
-			@ApiParam(value = "Search Criteria", required = false) @RequestParam String search,
+			@ApiParam(value = "Search Criteria", required = false) @RequestParam(required = false) String search,
 			@ApiParam(value = "Export choice", required = true) @RequestParam(defaultValue = "false") Boolean isExported,
 			@ApiParam(value = "Export Type", required = true) @RequestParam(defaultValue = "EXCEL") String exportType,
-			HttpServletResponse response) throws CustomException {
+			HttpServletResponse response) {
 		log.info("Search Parameter: " + search);
 		log.info("Sort Parameter: " + sort);
 
 		if (page == null || size == null) {
-			throw new CustomException("Page number or Page Size can not be empty", HttpStatus.BAD_REQUEST);
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Page number or Page Size can not be empty");
 		}
 		if (page == 0) {
-			throw new CustomException("Page number can not be 0", HttpStatus.BAD_REQUEST);
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Page number can not be 0");
 
 		}
 
@@ -112,7 +111,7 @@ public class StockController {
 		PageRequest pageRequest = PageRequest.of(page - 1, size, sortCriteria);
 
 		return new ResponseEntity<>(ResponseUtil.buildSuccessResponse(
-				service.findAllStock(search.trim(), pageRequest, isExported, exportType, response),
+				service.findAllStock(search, pageRequest, isExported, exportType, response),
 				new ResponseSchema<List<StockResponseDto>>()), HttpStatus.OK);
 
 	}
@@ -137,6 +136,7 @@ public class StockController {
 				new ResponseSchema<List<TopDrugAboutToExpire>>()), HttpStatus.OK);
 
 	}
+
 	@PreAuthorize("hasAnyAuthority('ADMIN', 'USER')")
 	@PostMapping(Endpoints.RETURN_EXPIRED_ITEM)
 	@ApiOperation("Create return request for expired items")
@@ -147,6 +147,7 @@ public class StockController {
 				HttpStatus.OK);
 
 	}
+
 	@PreAuthorize("hasAnyAuthority('ADMIN', 'USER')")
 	@DeleteMapping(Endpoints.DELETE_STOCK)
 	@ApiOperation("Delete stock by id")
@@ -158,6 +159,5 @@ public class StockController {
 				HttpStatus.OK);
 
 	}
-	
-	
+
 }

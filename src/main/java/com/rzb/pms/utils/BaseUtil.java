@@ -9,18 +9,18 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.server.ResponseStatusException;
 
-import com.rzb.pms.dto.DrugType;
-import com.rzb.pms.dto.ExpireStatus;
-import com.rzb.pms.dto.ReferenceType;
-import com.rzb.pms.exception.CustomException;
+import com.rzb.pms.model.enums.DrugType;
+import com.rzb.pms.model.enums.ExpireStatus;
+import com.rzb.pms.model.enums.ReferenceType;
 import com.rzb.pms.rsql.SearchCriteria;
 import com.rzb.pms.rsql.SearchKey;
 import com.rzb.pms.rsql.SearchOperators;
 
-import lombok.extern.slf4j.Slf4j;
-
-@Slf4j
 public class BaseUtil {
 
 	/**
@@ -36,8 +36,8 @@ public class BaseUtil {
 		String[] sorts = sort.split(",");
 		for (String s : sorts) {
 			if (s.split(":").length != 2) {
-				log.error("Please give a proper sort argument", HttpStatus.NOT_FOUND);
-				throw new CustomException("Please give a proper sort argument", HttpStatus.NOT_FOUND);
+
+				throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Please give a proper sort argument");
 			}
 			String sortBy = s.split(":")[0];
 			String sortOrder = s.split(":")[1];
@@ -51,10 +51,9 @@ public class BaseUtil {
 						sortObj = sortObj.and(Sort.by(Direction.fromString(sortOrder), sortBy));
 					}
 				} else {
-					log.error("Please give a proper sort Order like ASC(Ascending) or DSC(Descending) ",
-							HttpStatus.NOT_FOUND);
-					throw new CustomException("Please give a proper sort Order like ASC(Ascending) or DSC(Descending) ",
-							HttpStatus.NOT_FOUND);
+
+					throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+							"Please give a proper sort Order like ASC(Ascending) or DSC(Descending) ");
 
 				}
 			} else if (sortBy.equalsIgnoreCase("createdDate") || sortBy.equalsIgnoreCase("updatedDate")) {
@@ -66,18 +65,15 @@ public class BaseUtil {
 						sortObj = sortObj.and(Sort.by(Direction.fromString(sortOrder), sortBy));
 					}
 				} else {
-					log.error("Please give a proper sort Order like ASC(Ascending) or DSC(Descending) ",
-							HttpStatus.NOT_FOUND);
-					throw new CustomException("Please give a proper sort Order like ASC(Ascending) or DSC(Descending) ",
-							HttpStatus.NOT_FOUND);
+
+					throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+							"Please give a proper sort Order like ASC(Ascending) or DSC(Descending)");
 
 				}
 
 			} else {
-				log.error("Please give a proper sort argument Like expiryDate, unitPrice, mrp",
-						HttpStatus.NOT_FOUND);
-				throw new CustomException("Please give a proper sort argument Like expiryDate, unitPrice, mrp",
-						HttpStatus.NOT_FOUND);
+				throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+						"Please give a proper sort argument Like expiryDate, unitPrice, mrp");
 			}
 		}
 		return sortObj;
@@ -97,28 +93,28 @@ public class BaseUtil {
 		String key, operator = null;
 		String[] o = queryParam.split("==|>=|=lk=|<|=bt=");
 		if (o.length < 2) {
-			log.error("Please provide proper search Criteria, Supported operators are ==, >=,=lk= ,< ",
-					HttpStatus.BAD_REQUEST);
-			throw new CustomException("Please provide proper search Criteria, Supported operators are ==, >=,=lk= ,< ",
-					HttpStatus.BAD_REQUEST);
+
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+					"Please provide proper search Criteria, Supported operators are ==, >=,=lk= ,< ");
 		}
 		operator = queryParam.substring(o[0].length(), queryParam.length() - o[1].length()).replaceAll("\\s+", "");
+		value = o[1].trim().replaceAll("\\s+", " ");
+		key = o[0].replaceAll("\\s+", "");
 		if (operator.equalsIgnoreCase("=bt=")) {
 
 			value = null;
 		}
-		value = o[1].trim().replaceAll("\\s+", " ");
-		key = o[0].replaceAll("\\s+", "");
+//		else if (operator.equalsIgnoreCase("=lk=")) {
+//			value = "%"+value+"%";
+//		}
 
 		switch (SearchKey.getKeyData(key)) {
 
 		case DRUG_NAME: {
 			if (!(SearchOperators.LIKE.getName().equals(operator)
 					|| SearchOperators.EQUALITY.getName().equals(operator))) {
-				log.error("Please provide proper search params, brandName will only support =lk= OR ==",
-						HttpStatus.BAD_REQUEST);
-				throw new CustomException("Please provide proper search params, brandName will only support =lk= OR ==",
-						HttpStatus.BAD_REQUEST);
+				throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+						"Please provide proper search params, drug name will only support =lk= OR ==");
 			} else {
 				return new SearchCriteria(key, operator, value);
 			}
@@ -127,11 +123,8 @@ public class BaseUtil {
 		case GENERIC_NAME: {
 			if (!(SearchOperators.LIKE.getName().equals(operator)
 					|| SearchOperators.EQUALITY.getName().equals(operator))) {
-				log.error("Please provide proper search params, genericName will only support =lk= OR ==",
-						HttpStatus.BAD_REQUEST);
-				throw new CustomException(
-						"Please provide proper search params, genericName will only support =lk= OR ==",
-						HttpStatus.BAD_REQUEST);
+				throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+						"Please provide proper search params, generic name will only support =lk= OR ==");
 			} else {
 				return new SearchCriteria(key, operator, value);
 			}
@@ -140,10 +133,8 @@ public class BaseUtil {
 		case COMPANY: {
 			if (!(SearchOperators.LIKE.getName().equals(operator)
 					|| SearchOperators.EQUALITY.getName().equals(operator))) {
-				log.error("Please provide proper search params, company will only support =lk= OR ==",
-						HttpStatus.BAD_REQUEST);
-				throw new CustomException("Please provide proper search params, company will only support =lk= OR ==",
-						HttpStatus.BAD_REQUEST);
+				throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+						"Please provide proper search params, company will only support =lk= OR ==");
 			} else {
 				return new SearchCriteria(key, operator, value);
 			}
@@ -151,11 +142,8 @@ public class BaseUtil {
 		case COMPOSITION: {
 			if (!(SearchOperators.LIKE.getName().equals(operator)
 					|| SearchOperators.EQUALITY.getName().equals(operator))) {
-				log.error("Please provide proper search params, composition will only support =lk= OR ==",
-						HttpStatus.BAD_REQUEST);
-				throw new CustomException(
-						"Please provide proper search params, composition will only support =lk= OR ==",
-						HttpStatus.BAD_REQUEST);
+				throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+						"Please provide proper search params, composition will only support =lk= OR ==");
 			} else {
 				return new SearchCriteria(key, operator, value);
 			}
@@ -164,22 +152,20 @@ public class BaseUtil {
 		case LOCATION: {
 			if (!(SearchOperators.LIKE.getName().equals(operator)
 					|| SearchOperators.EQUALITY.getName().equals(operator))) {
-				log.error("Please provide proper search params, location will only support =lk= OR ==",
-						HttpStatus.BAD_REQUEST);
-				throw new CustomException("Please provide proper search params, location will only support =lk= OR ==",
-						HttpStatus.BAD_REQUEST);
+
+				throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+						"Please provide proper search params, location will only support =lk= OR ==");
+
 			} else {
 				return new SearchCriteria(key, operator, value);
 			}
 
 		}
 		default:
-			log.error("Please Provide right search parameter . Like genericanme, brandName, company, composition, "
-					+ "location, cretedBy, updatedBy, createdDate, updatedDate", HttpStatus.BAD_REQUEST);
-			throw new CustomException(
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
 					"Please Provide right search parameter . Like genericanme, brandName, company, composition, "
-							+ "location, cretedBy, updatedBy, createdDate, updatedDate",
-					HttpStatus.BAD_REQUEST);
+							+ "location, cretedBy, updatedBy, createdDate, updatedDate");
+
 		}
 	}
 
@@ -197,9 +183,9 @@ public class BaseUtil {
 	public static String getRandomReference(String type) {
 
 		if (ReferenceType.PO.toString().equalsIgnoreCase(type)) {
-			return "PO-" + RandomStringUtils.randomAlphabetic(4);
+			return "PO-" + RandomStringUtils.randomAlphabetic(4).toUpperCase();
 		} else if (ReferenceType.SELL.toString().equalsIgnoreCase(type)) {
-			return "SL-" + RandomStringUtils.randomAlphabetic(4);
+			return "SL-" + RandomStringUtils.randomAlphabetic(4).toUpperCase();
 		} else {
 			return "";
 		}
@@ -250,13 +236,18 @@ public class BaseUtil {
 
 	public static String remainingExpireTime(LocalDate expiryDate) {
 
-		LocalDate expDate = LocalDate.of(expiryDate.getYear(), expiryDate.getMonthValue(), expiryDate.getDayOfMonth());
-		LocalDate now = LocalDate.now();
-		Period diff = Period.between(expDate, now);
+		try {
+			LocalDate expDate = LocalDate.of(expiryDate.getYear(), expiryDate.getMonthValue(),
+					expiryDate.getDayOfMonth());
+			LocalDate now = LocalDate.now();
+			Period diff = Period.between(expDate, now);
 
-		return "Expiring in" + ": " + diff.getYears() + " " + "Years, " + diff.getMonths() + ", Months, "
-				+ diff.getDays();
-
+			return "Expiring in" + ": " + diff.getYears() + " " + "Years, " + diff.getMonths() + ", Months, "
+					+ diff.getDays();
+		} catch (Exception e) {
+			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+					"Exception while calculating remaining expiry time", e);
+		}
 	}
 
 	public static String getExpireStatus(LocalDate expiryDate) {
@@ -295,8 +286,8 @@ public class BaseUtil {
 			return (str == null && str.isEmpty());
 
 		}
-		if (obj instanceof Date) {
-			Date date = (Date) obj;
+		if (obj instanceof LocalDate) {
+			LocalDate date = (LocalDate) obj;
 
 			return (date == null);
 		}
@@ -327,5 +318,15 @@ public class BaseUtil {
 
 	public static Date convertToDateViaSqlDate(LocalDate dateToConvert) {
 		return java.sql.Date.valueOf(dateToConvert);
+	}
+
+	public static String getLoggedInuserName() {
+
+		String currentUserName = null;
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		if (!(authentication instanceof AnonymousAuthenticationToken)) {
+			currentUserName = authentication.getName();
+		}
+		return currentUserName;
 	}
 }

@@ -14,17 +14,16 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
-import com.rzb.pms.dto.AuditType;
 import com.rzb.pms.dto.UserSignUpDTO;
-import com.rzb.pms.dto.UserTokenType;
-import com.rzb.pms.exception.CustomEntityNotFoundException;
-import com.rzb.pms.exception.CustomException;
 import com.rzb.pms.model.Audit;
 import com.rzb.pms.model.Role;
 import com.rzb.pms.model.RoleType;
 import com.rzb.pms.model.UserToken;
 import com.rzb.pms.model.Users;
+import com.rzb.pms.model.enums.AuditType;
+import com.rzb.pms.model.enums.UserTokenType;
 import com.rzb.pms.repository.AuditRepository;
 import com.rzb.pms.repository.RoleRepository;
 import com.rzb.pms.repository.UserRepository;
@@ -58,9 +57,6 @@ public class UserService {
 	@Autowired
 	private EmailService emailService;
 
-	@Autowired
-	private RoleRepository roleRepo;
-
 	public UserService(UserRepository userRepository) {
 		this.userRepository = userRepository;
 	}
@@ -89,12 +85,12 @@ public class UserService {
 	public String registerUser(UserSignUpDTO data) {
 
 		if (data == null) {
-			throw new CustomException("Users inforamation can not be null or empty", HttpStatus.BAD_REQUEST);
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Users inforamation can not be null or empty");
 		}
 
 		if (existUserByEmail(data.getEmail()) || existUserPhone(data.getPhone())) {
-			throw new CustomException("Users " + "[ Email:" + data.getEmail() + ", Phone:" + data.getPhone()
-					+ "] already exist, Please use different email and phone number", HttpStatus.BAD_REQUEST);
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Users " + "[ Email:" + data.getEmail()
+					+ ", Phone:" + data.getPhone() + "] already exist, Please use different email and phone number");
 		}
 		RoleType role = null;
 		List<Role> r = new ArrayList<Role>();
@@ -112,7 +108,7 @@ public class UserService {
 			Users u = Users.builder().email(data.getEmail()).isEnabled(false)
 					.password(passwordEncoder.encode(data.getPassword())).phone(data.getPhone())
 					.userName(data.getUserName()).roles(r).build();
-			// users.add(u);
+
 			userRepository.saveAndFlush(u);
 			auditRepository.save(Audit.builder().auditType(AuditType.USER_CREATED.toString())
 					.createdBy(data.getUserName()).createdDate(LocalDate.now()).userId(u.getId()).build());
@@ -122,6 +118,7 @@ public class UserService {
 				String token = UUID.randomUUID().toString();
 				saveUserToken(u, token, UserTokenType.EMAILVERIFICATION);
 				// now send email
+				@SuppressWarnings("deprecation")
 				String link = websiteURL + "/verifyEmail?email=" + URLEncoder.encode(u.getEmail()) + "&token=" + token;
 				emailService.sendVerificationMail(u.getEmail(), u.getUserName(), link);
 				log.info("Signup successful");
@@ -131,7 +128,7 @@ public class UserService {
 			return "Registration Successful";
 
 		} catch (Exception e) {
-			throw new CustomException("Problem while registration", e);
+			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Problem while registration", e);
 		}
 	}
 
@@ -141,51 +138,63 @@ public class UserService {
 	 * @param tokenType
 	 */
 	public void saveUserToken(final Users users, final String token, final UserTokenType tokenType) {
-		final UserToken userToken = new UserToken(token, users);
-		userToken.setType(tokenType);
+		try {
+			final UserToken userToken = new UserToken(token, users);
+			userToken.setType(tokenType);
 
-		userTokenRepository.save(userToken);
+			userTokenRepository.save(userToken);
+		} catch (Exception e) {
+			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Problem while saving user token", e);
+		}
 	}
 
 	public String manageAccountActiveStatus(Long userId, Boolean status) {
 
 		if (userId == 0) {
-			throw new CustomException("Users id can not be null or empty", HttpStatus.BAD_REQUEST);
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Users id can not be null or empty");
 		}
-		Users users = userRepository.findById(userId).get();
+		Users users = userRepository.findById(userId).orElse(null);
 		if (users == null) {
-			throw new CustomEntityNotFoundException(Users.class, "Users Id", userId.toString());
+			throw new ResponseStatusException(HttpStatus.NO_CONTENT, "No user info found for id : " + userId);
 		}
 		try {
 			users.setIsEnabled(status);
 			if (users.getRoles().get(0).equals(RoleType.USER)) {
 				userRepository.save(users);
 				if (status) {
-					auditRepository.save(Audit.builder().auditType(AuditType.USER_ENABLED.toString()).updatedBy("")
-							.updatedDate(LocalDate.now()).userId(userId).build());
+					auditRepository.save(Audit.builder().auditType(AuditType.USER_ENABLED.toString())
+							.updatedBy(BaseUtil.getLoggedInuserName()).updatedDate(LocalDate.now()).userId(userId)
+							.build());
 					return "Users Activated Successfully";
 				} else {
-					auditRepository.save(Audit.builder().auditType(AuditType.USER_DISABLED.toString()).updatedBy("")
-							.updatedDate(LocalDate.now()).userId(userId).build());
+					auditRepository.save(Audit.builder().auditType(AuditType.USER_DISABLED.toString())
+							.updatedBy(BaseUtil.getLoggedInuserName()).updatedDate(LocalDate.now()).userId(userId)
+							.build());
 					return "Users Deactivated Successfully";
 
 				}
 			} else {
-				throw new CustomException("Can not manually set activation status for Admin", HttpStatus.BAD_REQUEST);
+				throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+						"Can't manually set activation status for Admin");
 			}
 		} catch (Exception e) {
-			throw new CustomException("Problem while activating user, Please try again or contact PILL-H team", e);
+			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+					"Problem while activating user, Please try again or contact PILL-H team", e);
 		}
 
 	}
 
 	@Transactional
 	Role createRoleIfNotFound(RoleType name) {
-		boolean existsRoleByName = roleService.existsRoleByName(name);
-		if (!existsRoleByName) {
-			Role role = new Role(name);
-			roleService.save(role);
-			return role;
+		try {
+			boolean existsRoleByName = roleService.existsRoleByName(name);
+			if (!existsRoleByName) {
+				Role role = new Role(name);
+				roleService.save(role);
+				return role;
+			}
+		} catch (Exception e) {
+			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Problem while creating role", e);
 		}
 		return null;
 	}
@@ -198,21 +207,23 @@ public class UserService {
 	 */
 	@Transactional
 	public String verifyEmail(String token, String inputEmail) {
-		String email = validatePasswordResetToken(token).trim();
-		Users users = userRepository.findByEmail(email);
-		if (users == null) {
-			log.error("Oops! Email not found in our system.");
-			throw new CustomException("Oops! Email not found in our system.", HttpStatus.NOT_FOUND);
-		}
-		if (!inputEmail.equals(email)) {
-			log.error("Invalid email");
-			throw new CustomException("Invalid email", HttpStatus.BAD_REQUEST);
-		}
-		// set status as confirmed so that user can signin
-		users.setIsEnabled(true);
-		userRepository.save(users);
+		try {
+			String email = validatePasswordResetToken(token).trim();
+			Users users = userRepository.findByEmail(email);
+			if (users == null) {
+				throw new ResponseStatusException(HttpStatus.NO_CONTENT, "Oops! Email not found in our system.");
+			}
+			if (!inputEmail.equals(email)) {
+				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid email");
+			}
+			// set status as confirmed so that user can signin
+			users.setIsEnabled(true);
+			userRepository.save(users);
 
-		return "Email verification successfull";
+			return "Email verification successfull";
+		} catch (Exception e) {
+			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Problem while email verification", e);
+		}
 	}
 
 	/**
@@ -220,27 +231,29 @@ public class UserService {
 	 * @return Validate token and remove if valid
 	 */
 	public String validatePasswordResetToken(String token) {
-		UserToken userToken = userTokenRepository.findByToken(token);
+		try {
+			UserToken userToken = userTokenRepository.findByToken(token);
 
-		if ((userToken == null)) {
-			log.error("Invalid link");
+			if ((userToken == null)) {
 
-			throw new CustomException("Invalid link", HttpStatus.BAD_REQUEST);
+				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid link");
+			}
+
+			Calendar cal = Calendar.getInstance();
+			if ((BaseUtil.convertToDateViaSqlDate(userToken.getExpiry()).getTime() - cal.getTime().getTime()) <= 0) {
+
+				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid link");
+			}
+
+			log.info("Valid token");
+
+			// delete token
+			userTokenRepository.delete(userToken);
+
+			return userToken.getUsers().getEmail();
+		} catch (Exception e) {
+			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+					"Problem while validating password reset token ", e);
 		}
-
-		Calendar cal = Calendar.getInstance();
-		if ((BaseUtil.convertToDateViaSqlDate(userToken.getExpiry()).getTime() - cal.getTime().getTime()) <= 0) {
-
-			log.error("Invalid link");
-
-			throw new CustomException("Invalid link", HttpStatus.BAD_REQUEST);
-		}
-
-		log.info("Valid token");
-
-		// delete token
-		userTokenRepository.delete(userToken);
-
-		return userToken.getUsers().getEmail();
 	}
 }

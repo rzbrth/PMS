@@ -12,8 +12,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
-import com.rzb.pms.exception.CustomException;
 import com.rzb.pms.rsql.SearchCriteria;
 import com.rzb.pms.rsql.SearchOperators;
 
@@ -93,9 +93,8 @@ public class GenericSpecification<T> implements Specification<T> {
 			return builder.isNull(root.get(criteria.getKey()));
 		}
 		default:
-			logger.error("Please Provide right search Operation. Like >=, =lk=, !null, ==, < ", HttpStatus.BAD_REQUEST);
-			throw new CustomException("Please Provide right search Operation. Like >=, =lk=, !null, ==, < ",
-					HttpStatus.BAD_REQUEST);
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+					"Please Provide right search Operation. Like >=, =lk=, !null, ==, < ");
 		}
 
 	}

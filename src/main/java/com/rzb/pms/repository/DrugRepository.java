@@ -23,4 +23,7 @@ public interface DrugRepository extends JpaRepository<Drug, String>, JpaSpecific
 	@Query(value = "select * from DRUG  where brand_name = ?1", nativeQuery = true)
 	DrugDTO findByBrandName(@Valid String brandName);
 
+	@Query(value = "select * from DRUG where composition like %?1% limit ?2", nativeQuery = true)
+	List<Drug> findSubstitute(String composition,int pageSize);
+
 }

@@ -22,13 +22,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
-import com.rzb.pms.exception.CustomException;
 import com.rzb.pms.security.JwtAuthenticationRequest;
 import com.rzb.pms.security.JwtAuthenticationResponse;
 import com.rzb.pms.security.JwtTokenUtil;
 import com.rzb.pms.security.UserAuthentication;
-import com.rzb.pms.security.repository.AuthTokenRepository;
 import com.rzb.pms.security.service.AuthtokenService;
 import com.rzb.pms.utils.Endpoints;
 
@@ -46,9 +45,6 @@ public class AuthenticationController {
 
 	@Autowired
 	private JwtTokenUtil jwtTokenUtil;
-
-	@Autowired
-	private AuthTokenRepository authRepo;
 
 	@Autowired
 	private AuthtokenService authService;
@@ -112,9 +108,9 @@ public class AuthenticationController {
 		try {
 			authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
 		} catch (DisabledException e) {
-			throw new CustomException("Users is disabled!", e);
+			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Users is disabled!", e);
 		} catch (BadCredentialsException e) {
-			throw new CustomException("Bad credentials!", e);
+			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Bad credentials!", e);
 		}
 	}
 }
