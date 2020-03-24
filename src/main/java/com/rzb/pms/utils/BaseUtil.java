@@ -25,7 +25,7 @@ public class BaseUtil {
 
 	/**
 	 * This method will take the sort criteria and process it accordingly Only
-	 * Supported sort criteria are expiryDate, unitPrice, mrp and sort orders are
+	 * Supported sort criteria are expiryDate, unitPrice, mrp  and sort orders are
 	 * ASC(Ascending) or DSC(Descending)
 	 * 
 	 * @param sort
