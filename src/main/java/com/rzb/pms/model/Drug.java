@@ -1,6 +1,6 @@
 package com.rzb.pms.model;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -36,7 +36,7 @@ public class Drug {
 
 	private String genericId;
 
-	private Date expiryDate;
+	private LocalDate expiryDate;
 
 	private String drugForm;
 

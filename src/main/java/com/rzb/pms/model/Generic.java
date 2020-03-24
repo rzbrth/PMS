@@ -1,17 +1,11 @@
 package com.rzb.pms.model;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.time.LocalDate;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToMany;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -51,13 +45,13 @@ public class Generic {
 
 	private Boolean alcoholInteraction;
 
-	private Date expireDate;
+	private LocalDate expireDate;
 
 //	@OneToMany(mappedBy = "genericPharma", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
 //	@JsonIgnoreProperties("genericPharma")
 //	private List<Drug> drugs = new ArrayList<Drug>();
 
-	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-	@JoinColumn(name = "genericId")
-	private List<Drug> drugs = new ArrayList<Drug>();
+//	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+//	@JoinColumn(name = "genericId")
+//	private List<Drug> drugs = new ArrayList<Drug>();
 }

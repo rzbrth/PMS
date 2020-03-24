@@ -27,7 +27,7 @@ public class GenericDto {
 	public GenericDto(Generic gen) {
 		this.genericId = gen.getGenericId();
 		this.name = gen.getName();
-		this.drugs = gen.getDrugs();
+		//this.drugs = gen.getDrugs();
 
 	}
 

@@ -1,6 +1,6 @@
 package com.rzb.pms.model;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -29,9 +29,11 @@ public class Stock {
 
 	private String drugId;
 
-	private Date stockCreatedAt;
+	private String drugName;
 
-	private Date stockUpdatedAt;
+	private LocalDate stockCreatedAt;
+
+	private LocalDate stockUpdatedAt;
 
 	private String createddBy;
 
@@ -43,11 +45,11 @@ public class Stock {
 
 	private Float unitPrice;
 
-	private String genericId;
+	// private String genericId;
 
 	private String location;
 
-	private Date expiryDate;
+	private LocalDate expiryDate;
 
 	private Double avlQntyWhole;
 
@@ -59,10 +61,8 @@ public class Stock {
 
 	private String invoiceReference;
 
-	private String poReferenseNumber;
-
 	private Integer poLId;
-	
+
 	private Integer poId;
 
 }

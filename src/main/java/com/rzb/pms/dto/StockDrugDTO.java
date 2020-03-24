@@ -2,7 +2,7 @@ package com.rzb.pms.dto;
 
 import java.util.Date;
 
-import com.rzb.pms.model.PoDrug;
+import com.rzb.pms.model.PoLineItems;
 import com.rzb.pms.model.PurchaseOrder;
 
 import lombok.AllArgsConstructor;
@@ -36,7 +36,7 @@ public class StockDrugDTO {
 
 	private String location;
 
-	public StockDrugDTO(PoDrug data) {
+	public StockDrugDTO(PoLineItems data) {
 		this.distributerId = data.getDistributerId();
 		this.drugDescription = data.getDrugDescription();
 		this.drugId = data.getDrugId();

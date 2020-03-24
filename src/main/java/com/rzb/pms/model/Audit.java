@@ -1,6 +1,6 @@
 package com.rzb.pms.model;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -24,25 +24,27 @@ public class Audit {
 	private Integer auditId;
 
 	private String auditType;
-	
-	private Date createdDate;
+
+	private LocalDate createdDate;
 
 	private String createdBy;
-	
-	private String updatedDate;
-	
+
+	private LocalDate updatedDate;
+
 	private String updatedBy;
 
 	private Integer customerId;
-	
+
 	private Integer dispenseId;
 	
 	private Integer stockId;
-	
-	private Integer poId;
-	
-	
 
- 
+	private Integer poId;
+
+	private Long userId;
+
+	private String drugId;
+
+	private Integer returnId;
 
 }

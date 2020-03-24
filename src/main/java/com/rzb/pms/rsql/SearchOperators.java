@@ -1,8 +1,7 @@
 package com.rzb.pms.rsql;
 
 import org.springframework.http.HttpStatus;
-
-import com.rzb.pms.exception.CustomException;
+import org.springframework.web.server.ResponseStatusException;
 
 public enum SearchOperators {
 
@@ -37,8 +36,8 @@ public enum SearchOperators {
 			return IS_NULL;
 
 		} else {
-			throw new CustomException("Please Provide right search Operator. Like >=, =lk=, !null, ==, < ",
-					HttpStatus.BAD_REQUEST);
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+					"Please Provide right search Operator. Like >=, =lk=, !null, ==, < ");
 		}
 
 	}

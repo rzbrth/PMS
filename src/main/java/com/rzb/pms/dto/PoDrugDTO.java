@@ -2,7 +2,7 @@ package com.rzb.pms.dto;
 
 import java.util.Date;
 
-import com.rzb.pms.model.PoDrug;
+import com.rzb.pms.model.PoLineItems;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -36,7 +36,18 @@ public class PoDrugDTO {
 	
 	private String location;
 	
-	public PoDrugDTO(PoDrug data) {
+	public PoDrugDTO(PoLineItems data) {
+		this.distributerId = data.getDistributerId();
+		this.drugDescription = data.getDrugDescription();
+		this.drugId = data.getDrugId();
+		this.drugName = data.getDrugName();
+		this.drugPrice = data.getDrugPrice();
+		this.drugQuantity = data.getDrugQuantity();
+		this.poDrugId = data.getPoDrugId();
+		this.poId = data.getPoId();
+	}
+	
+	public PoDrugDTO(PoDrugDTO data) {
 		this.distributerId = data.getDistributerId();
 		this.drugDescription = data.getDrugDescription();
 		this.drugId = data.getDrugId();

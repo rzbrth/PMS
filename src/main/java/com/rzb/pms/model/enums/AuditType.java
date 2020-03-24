@@ -1,0 +1,13 @@
+package com.rzb.pms.model.enums;
+
+public enum AuditType {
+
+	SELL, STOCK_IN_DIRECT, STOCK_IN_FROM_PO, STOCK_UPDATED, STOCK_OUT, STOCK_DELETED, PO_CREATED, PO_UPDATED,
+	PO_DELETED, DRUG_CREATED, DRUG_UPDATED, DRUG_DELETED, EXPIRED_STOCK_RETURN, USER_CREATED, USER_DELETED,
+	USER_DISABLED, USER_ENABLED, USER_UPDATED;
+
+	@Override
+	public String toString() {
+		return super.toString();
+	}
+}

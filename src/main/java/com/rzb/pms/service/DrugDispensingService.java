@@ -1,51 +1,58 @@
 package com.rzb.pms.service;
 
-import java.util.Date;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.transaction.Transactional;
 
-import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
-import com.rzb.pms.dto.AddToCartWrapper;
-import com.rzb.pms.dto.AuditType;
-import com.rzb.pms.dto.DrugDispenseDTO;
-import com.rzb.pms.dto.DrugType;
-import com.rzb.pms.dto.OtherInfoDTO;
-import com.rzb.pms.dto.ReferenceType;
-import com.rzb.pms.exception.CustomException;
-import com.rzb.pms.log.Log;
-import com.rzb.pms.model.Customer;
-import com.rzb.pms.model.Drug;
-import com.rzb.pms.model.DrugDispense;
+import com.rzb.pms.dto.AddToCartDTOReq;
+import com.rzb.pms.dto.AddToCartDTORes;
+import com.rzb.pms.dto.AddToCartWrapperReq;
+import com.rzb.pms.dto.AddToCartWrapperRes;
+import com.rzb.pms.dto.DrugDispenseWrapperDTO;
 import com.rzb.pms.model.Audit;
+import com.rzb.pms.model.Customer;
+import com.rzb.pms.model.Dispense;
+import com.rzb.pms.model.DispenseLineItems;
+import com.rzb.pms.model.Drug;
 import com.rzb.pms.model.Stock;
+import com.rzb.pms.model.enums.AuditType;
+import com.rzb.pms.model.enums.DrugType;
+import com.rzb.pms.model.enums.ReferenceType;
+import com.rzb.pms.repository.AuditRepository;
 import com.rzb.pms.repository.CustomerRepository;
-import com.rzb.pms.repository.DrugDispenseRepository;
+import com.rzb.pms.repository.DispenseRepository;
+import com.rzb.pms.repository.DrugDispenseLineItemRepository;
 import com.rzb.pms.repository.DrugRepository;
-import com.rzb.pms.repository.SellAuditRepository;
 import com.rzb.pms.repository.StockRepository;
 import com.rzb.pms.utils.BaseUtil;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Service
+@Slf4j
 public class DrugDispensingService {
 
-	@Log
-	private Logger logger;
+	@Autowired
+	private DrugDispenseLineItemRepository dispenseLineItemRepository;
 
 	@Autowired
-	private DrugDispenseRepository dispenseRepository;
+	private DispenseRepository dispenseRepo;
 
 	@Autowired
 	private DrugRepository repository;
 
 	@Autowired
-	private SellAuditRepository auditRepository;
+	private AuditRepository auditRepository;
 
 	@Autowired
 	private StockRepository stockRepository;
@@ -62,25 +69,33 @@ public class DrugDispensingService {
 	private static final String PRINT = "PRINT";
 	private static final String EMAIL = "EMAIL";
 
-	@Transactional
-	public String drugDispense(AddToCartWrapper wrapper) {
+	/*
+	 * This will calculate price based on tax and discount and will add items to
+	 * cart
+	 */
+	public AddToCartWrapperRes addToCard(AddToCartWrapperReq wrapper) {
 
 		try {
 
-			OtherInfoDTO restData = wrapper.getInfo();
-
-			for (DrugDispenseDTO item : wrapper.getItem()) {
+			// OtherInfoDTO restData = wrapper.getInfo();
+			List<AddToCartDTORes> lineItem = new ArrayList<AddToCartDTORes>();
+			for (AddToCartDTOReq item : wrapper.getItem()) {
 
 				if (item == null) {
+					throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No drug selected for dispense");
 
-					logger.error("No drug selected for dispense");
-					throw new CustomException("No drug selected for dispense", HttpStatus.BAD_REQUEST);
 				}
 				Double reqQntyInTrimmed = null, avlQntyInTrimmed = null, avlQntyInWhole = null, reqQntyInWhole = null;
-				String location = null;
-				Integer stockId = null;
-				float itemSellPriceBeforeDiscount = 0, itemSellPriceAfterDiscount = 0;
-				Drug drugData = repository.findById(item.getDrugId()).get();
+
+				float itemSellPriceBeforeDiscount = 0, itemSellPriceAfterDiscount = 0, itemSellPriceAfterTax = 0,
+						discount = 0;
+
+				Drug drugData = repository.findById(item.getDrugId()).orElse(null);
+
+				if (drugData == null) {
+					throw new ResponseStatusException(HttpStatus.NO_CONTENT, "No drug found for given id");
+				}
+
 				Stock stock = null;
 				if (item.getDrugUnit().equalsIgnoreCase(DrugType.TRIMMED.toString())) {
 					stock = stockRepository.findStockWithTrimmedQnty(item.getDrugId(), item.getItemSellQuantity());
@@ -88,14 +103,9 @@ public class DrugDispensingService {
 					stock = stockRepository.findStockWithWholeQnty(item.getDrugId(), item.getItemSellQuantity());
 				}
 				if (stock == null) {
-					logger.error("Stock is empty for : " + drugData.getBrandName());
-					throw new CustomException("Stock is empty for : " + drugData.getBrandName(),
-							HttpStatus.BAD_REQUEST);
-
+					throw new ResponseStatusException(HttpStatus.NO_CONTENT, "No stock found for given drug id");
 				}
 
-				location = stock.getLocation();
-				stockId = stock.getStockId();
 				if (item.getDrugUnit().equalsIgnoreCase(DrugType.TRIMMED.toString())) {
 					reqQntyInTrimmed = item.getItemSellQuantity();
 					avlQntyInTrimmed = stock.getAvlQntyTrimmed() - reqQntyInTrimmed;
@@ -112,10 +122,27 @@ public class DrugDispensingService {
 					itemSellPriceBeforeDiscount = (float) ((stock.getMrp() / stock.getPacking())
 							* item.getItemSellQuantity());
 
+					// Discount calculation
 					if (item.getIsDiscountApplicable()) {
 
 						itemSellPriceAfterDiscount = BaseUtil.calculatePriceAfterDiscount(stock.getMrp(),
-								restData.getDiscount(), itemSellPriceBeforeDiscount);
+								wrapper.getDiscount(), itemSellPriceBeforeDiscount);
+
+						// GST calculation
+						if (item.getIsGSTApplicable()) {
+							itemSellPriceAfterTax = BaseUtil.calculateNetPriceAfterGST(itemSellPriceAfterDiscount,
+									item.getGstPercentage());
+						}
+						itemSellPriceAfterTax = itemSellPriceAfterDiscount;
+
+					} else {
+						itemSellPriceAfterDiscount = itemSellPriceBeforeDiscount;
+						// GST calculation
+						if (item.getIsGSTApplicable()) {
+							itemSellPriceAfterTax = BaseUtil.calculateNetPriceAfterGST(itemSellPriceAfterDiscount,
+									item.getGstPercentage());
+						}
+						itemSellPriceAfterTax = itemSellPriceAfterDiscount;
 					}
 
 				} else if (item.getDrugUnit().equalsIgnoreCase(DrugType.STRIP.toString())) {
@@ -126,68 +153,124 @@ public class DrugDispensingService {
 					avlQntyInTrimmed = avlQntyInWhole * stock.getPacking();
 
 					itemSellPriceBeforeDiscount = (float) (item.getItemSellQuantity() * stock.getMrp());
+
+					// Discount calculation
 					if (item.getIsDiscountApplicable()) {
 
 						itemSellPriceAfterDiscount = BaseUtil.calculatePriceAfterDiscount(stock.getMrp(),
-								restData.getDiscount(), itemSellPriceBeforeDiscount);
+								wrapper.getDiscount(), itemSellPriceBeforeDiscount);
+
+						// GST calculation
+						if (item.getIsGSTApplicable()) {
+							itemSellPriceAfterTax = BaseUtil.calculateNetPriceAfterGST(itemSellPriceAfterDiscount,
+									item.getGstPercentage());
+						} else {
+							itemSellPriceAfterTax = itemSellPriceAfterDiscount;
+						}
+					} else {
+						itemSellPriceAfterDiscount = itemSellPriceBeforeDiscount;
+						// GST calculation
+						if (item.getIsGSTApplicable()) {
+							itemSellPriceAfterTax = BaseUtil.calculateNetPriceAfterGST(itemSellPriceAfterDiscount,
+									item.getGstPercentage());
+						} else {
+							itemSellPriceAfterTax = itemSellPriceAfterDiscount;
+						}
 					}
 
 				}
-				// Updating drug stock
+
+				if (item.getIsDiscountApplicable()) {
+					discount = wrapper.getDiscount();
+				} else {
+					discount = 0;
+				}
+
+				lineItem.add(AddToCartDTORes.builder().discountPercentge(discount).drugUnit(item.getDrugUnit())
+						.gstPercentage(item.getGstPercentage()).itemSellQuantity(item.getItemSellQuantity())
+						.priceBeforeTaxAndDiscount(itemSellPriceBeforeDiscount)
+						.sellPriceAfterTaxAndDiscount(itemSellPriceAfterTax).avlQntyTrimmed(avlQntyInTrimmed)
+						.avlQntyWhole(avlQntyInWhole).brandName(drugData.getBrandName())
+						.expiryDate(stock.getExpiryDate()).mrp(stock.getMrp()).drugForm(drugData.getDrugForm())
+						.stockId(stock.getStockId()).packing(drugData.getPacking()).drugId(stock.getDrugId())
+						.location(stock.getLocation()).build());
+
+			}
+			return AddToCartWrapperRes.builder().item(lineItem).build();
+
+		} catch (Exception e) {
+			log.error("problem occured while Adding item : {}", e);
+			AddToCartWrapperRes rw = null;
+			return rw;
+		}
+
+	}
+
+	@Transactional
+	public String drugDispense(DrugDispenseWrapperDTO wrapper) {
+
+		try {
+			Customer data = customerRepository.findByMobileNumber(wrapper.getMobileNumber());
+
+			// Create new customer if not present and save audit detail
+			if (data == null) {
+				data = Customer.builder().mobileNumber(wrapper.getMobileNumber()).name(wrapper.getName()).build();
+				em.persist(data);
+				// The ID is only guaranteed to be generated at flush time.
+				// Persisting an entity only makes it "attached" to the persistence context.
+				em.flush();
+			}
+
+			Dispense dispense = Dispense.builder().customerId(data.getCustomerId()).build();
+			dispenseRepo.saveAndFlush(dispense);
+
+			for (AddToCartDTORes item : wrapper.getItem()) {
+
+				if (item == null) {
+					throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No drug selected for dispense");
+				}
+
 				Query q = em
 						.createNativeQuery(
 								"UPDATE stock SET avl_qnty_trimmed=?, avl_qnty_whole=? WHERE stock_id =? and drug_id=?")
-						.setParameter(1, avlQntyInTrimmed).setParameter(2, avlQntyInWhole).setParameter(3, stockId)
-						.setParameter(4, drugData.getDrugId());
+						.setParameter(1, item.getAvlQntyTrimmed()).setParameter(2, item.getAvlQntyWhole())
+						.setParameter(3, item.getStockId()).setParameter(4, item.getDrugId());
 				q.executeUpdate();
-				Integer sId = (Integer) q.getSingleResult();
 
-				Customer data = customerRepository.findByMobileNumber(restData.getCustomerMobileNumber());
+				DispenseLineItems dispenseLineITem = DispenseLineItems.builder().brandName(item.getBrandName())
+						.customerName(wrapper.getName()).discount(item.getDiscountPercentge())
+						.drugForm(item.getDrugForm()).drugId(item.getDrugId()).drugUnit(item.getDrugUnit())
+						.expiryDate(item.getExpiryDate()).itemSellQuantity(item.getItemSellQuantity())
+						.location(item.getLocation()).mobileNumber(wrapper.getMobileNumber()).mrp(item.getMrp())
+						.packing(item.getPacking()).paymentMode(wrapper.getPaymentMode())
+						.sellBy(BaseUtil.getLoggedInuserName()).sellDate(LocalDate.now())
+						.unitPrice(item.getMrp() / item.getPacking())
+						.itemSellPrice(item.getSellPriceAfterTaxAndDiscount())
+						.sellInvoiceNumber(BaseUtil.getRandomReference(ReferenceType.SELL.toString())).build();
+				dispenseLineItemRepository.saveAndFlush(dispenseLineITem);
 
-				DrugDispense dispense = DrugDispense.builder().brandName(drugData.getBrandName())
-						.composition(drugData.getComposition()).customerName(restData.getCustomerName())
-						.discount(restData.getDiscount()).drugForm(drugData.getDrugForm()).drugId(item.getDrugId())
-						.drugUnit(item.getDrugUnit()).expiryDate(stock.getExpiryDate())
-						.genericName(drugData.getGenericName()).itemSellPrice(itemSellPriceAfterDiscount)
-						.itemSellQuantity(item.getItemSellQuantity()).location(location)
-						.mobileNumber(restData.getCustomerMobileNumber()).mrp(stock.getMrp())
-						.packing(stock.getPacking()).paymentMode(restData.getPaymentMode()).sellBy("")
-						.unitPrice(stock.getMrp() / stock.getPacking())
-						.sellInvoiceNumber(BaseUtil.getRandomPoReference(ReferenceType.SELL.toString())).build();
-				dispenseRepository.saveAndFlush(dispense);
-				// Create new customer if not present and save audit detail
-				if (data == null) {
-					Customer customer = Customer.builder().mobileNumber(restData.getCustomerMobileNumber())
-							.name(restData.getCustomerName()).build();
-					em.persist(customer);
-					// The ID is only guaranteed to be generated at flush time.
-					// Persisting an entity only makes it "attached" to the persistence context.
-					em.flush();
+				// Auditing
+				auditRepository
+						.save(Audit.builder().customerId(data.getCustomerId()).createdBy(BaseUtil.getLoggedInuserName())
+								.createdDate(LocalDate.now()).dispenseId(dispense.getDispenseId())
+								.auditType(AuditType.SELL.toString()).stockId(item.getStockId()).build());
 
-					auditRepository.save(Audit.builder().customerId(customer.getCustomerId()).createdBy("")
-							.createdDate(new Date()).dispenseId(dispense.getDispenseId())
-							.auditType(AuditType.SELL.toString()).stockId(sId).build());
-				} else {
-					auditRepository.save(Audit.builder().customerId(data.getCustomerId()).createdBy("")
-							.createdDate(new Date()).dispenseId(dispense.getDispenseId())
-							.auditType(AuditType.SELL.toString()).stockId(sId).build());
-				}
 			}
 
-			if (restData.getIsInvoiceRequired()) {
+			if (wrapper.getIsInvoiceRequired()) {
 
-				if (restData.getInvoiceType().equalsIgnoreCase(PRINT)) {
+				if (wrapper.getInvoiceType().equalsIgnoreCase(PRINT)) {
 					documentService.printInvoice();
-				} else if (restData.getInvoiceType().equalsIgnoreCase(EMAIL)) {
+				} else if (wrapper.getInvoiceType().equalsIgnoreCase(EMAIL)) {
 					documentService.mailInvoice();
 				}
 
 			}
+			return "Item dispensed Sucessfully";
 		} catch (Exception e) {
-			logger.error("problem occured while dispensing item", e);
-			throw new CustomException("problem occured while dispensing item", e);
+			log.error("problem occured while dispensing item : {}", e);
+			return "problem occured while dispensing item";
 		}
-		return "Item dispensed Sucessfully";
 
 	}
 

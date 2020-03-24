@@ -15,30 +15,30 @@ import lombok.NoArgsConstructor;
 @Builder
 public class PurchaseOrderDTO {
 
-	private Integer poId;
-
-	private Date createdDate;
-
-	private Date updatedDate;
-
-	private String createdBy;
-
-	private String updatedBy;
-	
-	private String poStatus;
-	
-	private String poReference;
+//	private Integer poId;
+//
+//	private Date createdDate;
+//
+//	private Date updatedDate;
+//
+//	private String createdBy;
+//
+//	private String updatedBy;
+//	
+//	private String poStatus;
+//	
+//	private String referenceNumber;
 
 
 	private List<PoDrugDTO> poLineItem;
 	
-	public PurchaseOrderDTO(PurchaseOrder data) {
-		
-		this.poId = data.getPoId();
-		this.createdDate = data.getCreatedDate();
-		this.updatedDate = data.getUpdatedDate();
-		this.updatedBy = data.getUpdatedBy();
-		this.createdBy = data.getUpdatedBy();
-	}
+//	public PurchaseOrderDTO(PurchaseOrder data) {
+//		
+//		this.poId = data.getPoId();
+//		this.createdDate = data.getCreatedDate();
+//		this.updatedDate = data.getUpdatedDate();
+//		this.updatedBy = data.getUpdatedBy();
+//		this.createdBy = data.getUpdatedBy();
+//	}
 
 }

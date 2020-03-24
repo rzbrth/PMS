@@ -11,7 +11,10 @@ import lombok.NoArgsConstructor;
 @Builder
 public class StockProjPre {
 
+	private Integer stockId;
+
 	private Double avlQntyWhole;
 
 	private String location;
+
 }

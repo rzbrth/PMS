@@ -1,6 +1,6 @@
 package com.rzb.pms.dto;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,7 +15,7 @@ public class StockDirectRequestDTO {
 
 	private String drugId;
 
-	private String genericId;
+	// private String genericId;
 
 	private Integer distributerId;
 
@@ -27,10 +27,10 @@ public class StockDirectRequestDTO {
 
 	private String location;
 
-	private Date expiryDate;
+	private LocalDate expiryDate;
 
 	private Double avlQntyWhole;
 
-	private Double avlQntyTrimmed;
-	
+	// private Double avlQntyTrimmed;
+
 }
