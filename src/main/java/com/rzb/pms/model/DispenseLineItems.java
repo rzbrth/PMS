@@ -23,15 +23,9 @@ public class DispenseLineItems {
 	@GeneratedValue(strategy = GenerationType.SEQUENCE)
 	private Integer dispenseLineItemId;
 
-	private String mobileNumber;
-
 	private String drugId;
 
 	private String brandName;
-
-	private LocalDate sellDate;
-
-	private String sellBy;
 
 	private Integer packing;
 
@@ -47,18 +41,18 @@ public class DispenseLineItems {
 
 	private float discount;
 
-	private String paymentMode;
-
 	private String drugUnit;// Strip or trimmed
 
 	private LocalDate expiryDate;
 
 	private String drugForm;
 
-	private String customerName;
-
-	private String sellInvoiceNumber;
-
 	private Integer dispenseId;
+	
+	public Boolean isReturned;
+	
+	public Integer stockId;
+	
+	private Integer poId;
 
 }

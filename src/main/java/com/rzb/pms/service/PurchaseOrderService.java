@@ -11,12 +11,12 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.persistence.EntityManager;
-import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.rzb.pms.dto.PoCreateDTO;
@@ -193,11 +193,10 @@ public class PurchaseOrderService {
 		for (PurchaseOrder data : orderInfo) {
 			for (PoLineItems st : data.getPodrug()) {
 
-				PoDrugDTO result = PoDrugDTO.builder().distributerId(st.getDistributerId())
+				res.add(PoDrugDTO.builder().distributerId(st.getDistributerId())
 						.drugDescription(st.getDrugDescription()).drugId(st.getDrugId()).drugName(st.getDrugName())
 						.drugPrice(st.getDrugPrice()).drugQuantity(st.getDrugQuantity()).poDrugId(st.getPoDrugId())
-						.poId(st.getPoId()).build();
-				res.add(result);
+						.poId(st.getPoId()).build());
 
 			}
 
@@ -212,10 +211,10 @@ public class PurchaseOrderService {
 				}
 
 			}
-			PurchaseOrderResponse result = PurchaseOrderResponse.builder().poId(d.getPoId()).createdBy(d.getCreatedBy())
+
+			response.add(PurchaseOrderResponse.builder().poId(d.getPoId()).createdBy(d.getCreatedBy())
 					.createdDate(d.getCreatedDate()).poStatus(d.getPoStatus()).referenceNumber(d.getPoReference())
-					.updatedBy(d.getUpdatedBy()).updatedDate(d.getUpdatedDate()).poLineItem(parsedRes).build();
-			response.add(result);
+					.updatedBy(d.getUpdatedBy()).updatedDate(d.getUpdatedDate()).poLineItem(parsedRes).build());
 		}
 		return response;
 	}

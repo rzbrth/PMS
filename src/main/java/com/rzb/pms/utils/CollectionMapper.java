@@ -67,7 +67,7 @@ public abstract class CollectionMapper<FROM, TO> {
 				if (!stockInfo.isEmpty()) {
 					for (Object x[] : stockInfo) {
 
-						data.add(StockProjPre.builder().stockId((Integer) x[0]).location((String) x[2])
+						data.add(StockProjPre.builder().stockId((Integer) x[0]).location((String) x[2]).poId((Integer) x[3])
 								.avlQntyWhole((Double) x[1]).build());
 					}
 

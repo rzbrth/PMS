@@ -9,12 +9,12 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletResponse;
-import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.google.common.base.Strings;
@@ -138,7 +138,7 @@ public class StockService<K> {
 						repository.save(Stock.builder().avlQntyWhole(stock.getDrugQuantity())
 								.avlQntyTrimmed(drugData.getPacking() * stock.getDrugQuantity())
 								.createddBy(BaseUtil.getLoggedInuserName()).stockCreatedAt(LocalDate.now())
-								.expiryDate(LocalDate.now())
+								.expiryDate(LocalDate.now()).poLId(stock.getPoDrugId())
 								// .genericId(drugData.getGenericId())
 								.location(stock.getLocation()).mrp(stock.getDrugPrice()).packing(drugData.getPacking())
 								.stockCreatedAt(LocalDate.now()).unitPrice(stock.getDrugPrice() / drugData.getPacking())

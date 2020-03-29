@@ -17,4 +17,5 @@ public class StockProjPre {
 
 	private String location;
 
+	private Integer poId;
 }

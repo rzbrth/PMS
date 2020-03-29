@@ -25,7 +25,7 @@ public class BaseUtil {
 
 	/**
 	 * This method will take the sort criteria and process it accordingly Only
-	 * Supported sort criteria are expiryDate, unitPrice, mrp  and sort orders are
+	 * Supported sort criteria are expiryDate, unitPrice, mrp and sort orders are
 	 * ASC(Ascending) or DSC(Descending)
 	 * 
 	 * @param sort
@@ -43,7 +43,9 @@ public class BaseUtil {
 			String sortOrder = s.split(":")[1];
 
 			if (sortBy.equalsIgnoreCase("expiryDate") || sortBy.equalsIgnoreCase("unitPrice")
-					|| sortBy.equalsIgnoreCase("mrp")) {
+					|| sortBy.equalsIgnoreCase("mrp") || sortBy.equalsIgnoreCase("createdDate")
+					|| sortBy.equalsIgnoreCase("updatedDate") || sortBy.equalsIgnoreCase("sellDate")) {
+
 				if ("ASC".equals(sortOrder) || "DESC".equals(sortOrder)) {
 					if (sortObj == null) {
 						sortObj = Sort.by(Direction.fromString(sortOrder), sortBy);
@@ -56,24 +58,11 @@ public class BaseUtil {
 							"Please give a proper sort Order like ASC(Ascending) or DSC(Descending) ");
 
 				}
-			} else if (sortBy.equalsIgnoreCase("createdDate") || sortBy.equalsIgnoreCase("updatedDate")) {
+			}
 
-				if ("ASC".equals(sortOrder) || "DESC".equals(sortOrder)) {
-					if (sortObj == null) {
-						sortObj = Sort.by(Direction.fromString(sortOrder), sortBy);
-					} else {
-						sortObj = sortObj.and(Sort.by(Direction.fromString(sortOrder), sortBy));
-					}
-				} else {
-
-					throw new ResponseStatusException(HttpStatus.NOT_FOUND,
-							"Please give a proper sort Order like ASC(Ascending) or DSC(Descending)");
-
-				}
-
-			} else {
+			else {
 				throw new ResponseStatusException(HttpStatus.NOT_FOUND,
-						"Please give a proper sort argument Like expiryDate, unitPrice, mrp");
+						"Please give a proper sort argument Like expiryDate, unitPrice, mrp, sellDate");
 			}
 		}
 		return sortObj;
@@ -183,11 +172,13 @@ public class BaseUtil {
 	public static String getRandomReference(String type) {
 
 		if (ReferenceType.PO.toString().equalsIgnoreCase(type)) {
-			return "PO-" + RandomStringUtils.randomAlphabetic(4).toUpperCase();
+			return "PO-" + RandomStringUtils.randomAlphabetic(3).toUpperCase();
 		} else if (ReferenceType.SELL.toString().equalsIgnoreCase(type)) {
-			return "SL-" + RandomStringUtils.randomAlphabetic(4).toUpperCase();
+			return "SELL-" + RandomStringUtils.randomAlphabetic(3).toUpperCase();
+		} else if (ReferenceType.RETURN.toString().equalsIgnoreCase(type)) {
+			return "RETURN-" + RandomStringUtils.randomAlphabetic(3).toUpperCase();
 		} else {
-			return "";
+			return "NA" + RandomStringUtils.randomAlphabetic(3).toUpperCase();
 		}
 
 	}
