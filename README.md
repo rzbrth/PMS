@@ -1,6 +1,6 @@
 NextGen pharma used for handling the medicine stock, customer transactions, ledger balance and stock reports. It solve all your issues of managing the medical shop. Our free Pharmacy software used to keep records of medicine, no more worries of handing the stock, Generation of bill, Invoice and other back-end process of generation of reports. It help to keep track of expired medicine, extract expiring medicine and sell it on deal.
 
-Our software helps to find the availability and shortage of stock, fast-moving medicines reordered before stock closed down. Billing simplified using our POS barcode enabled system. 
+Our software helps to find the availability and shortage of stock, fast-moving medicines reordered before stock closed down.
 
 ### Highlights of NextGen Pharma
 
@@ -14,8 +14,7 @@ Manage Medical shop automation
 6.  Monitor real-time sales of medical stores
 7.  Auto backup facility helps easy recovery of medical store data
 8.  LIFO or FIFO billing option allowed for  **batch / expire**  items
-9.  Easy  **commission**  management with multiple configurable options
-10.  Manage  **discount coupon promotion**  with various options
+9.  Manage  **gst and discount**  with various options
 
 Manage medicine stock books
 
@@ -33,15 +32,12 @@ Manage medicine stock books
 Medical Stores Billing & accounting features
 
 1.  POS sales entry system
-2.  Generate sales bill by scanning barcode
-3.  Customer Ledger and counter sales
-4.  Receipt, Payment and Adjustment transaction allowed
-5.  Sales in Strips & Tablets
-6.  Multiple Customers Billing at same time on single PC
-7.  Option for select the  **free/bonus**  quantity while generating the bill
-8.  Option for  **discount**  entry in sales
-9.  Sales terminal supports custom sales button with picture
-10.  Cost effective thermal bill printing, sales bill customization supported
+2.  Customer Ledger and counter sales
+3.  Receipt, Payment and Adjustment transaction allowed
+4.  Sales in Strips & Tablets
+5.  Multiple Customers Billing at same time on single PC
+6.  Option for select the  **free/bonus**  quantity while generating the bill
+7.  Option for  **discount**  entry in sales
 
 Medical Stores Reports
 
@@ -51,7 +47,7 @@ Medical Stores Reports
 4.  Daily cash register
 5.  Ageing reports/expired medicine reports
 6.  Minimum Level Or Safety Stock alert report
-7.  Sales Tax / VAT Register
+7.  Sales Tax / GST Register
 8.  commission report based on sales man/doctors
 9.  Barcode label printing
 10.  Report can be exported to various formats
