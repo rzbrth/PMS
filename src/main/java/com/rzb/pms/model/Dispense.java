@@ -1,5 +1,6 @@
 package com.rzb.pms.model;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import javax.persistence.CascadeType;
@@ -10,6 +11,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -24,12 +26,26 @@ import lombok.NoArgsConstructor;
 public class Dispense {
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.SEQUENCE)
+	@GeneratedValue(strategy = GenerationType.AUTO)
 	private Integer dispenseId;
 
-	private Integer customerId;
+	private String sellInvoiceNumber;
+
+	private LocalDate sellDate;
+
+	private String sellBy;
+
+	private String paymentMode;
 
 	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	@JoinColumn(name = "dispenseId", insertable = false, updatable = false)
 	private List<DispenseLineItems> dispenseLineItems;
+
+	private Integer customerId;
+
+	@OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+	@JoinColumn(name = "dispenseId", insertable = false, updatable = false)
+	private Customer customer;
+	
+	public Boolean isReturned;
 }

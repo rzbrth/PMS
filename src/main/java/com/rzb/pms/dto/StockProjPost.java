@@ -16,5 +16,7 @@ public class StockProjPost {
 	private String avlQntyWhole;
 
 	private String location;
+	
+	private Integer poId;
 
 }
