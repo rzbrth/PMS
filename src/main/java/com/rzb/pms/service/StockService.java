@@ -42,6 +42,7 @@ import com.rzb.pms.repository.DistributerRepository;
 import com.rzb.pms.repository.DrugRepository;
 import com.rzb.pms.repository.ExpiredItemReturnRepository;
 import com.rzb.pms.repository.StockRepository;
+import com.rzb.pms.rsql.SearchCriteria;
 import com.rzb.pms.utils.BaseUtil;
 import com.rzb.pms.utils.ReportUtills;
 
@@ -69,6 +70,9 @@ public class StockService<K> {
 
 	private ReportUtills report = new ReportUtills();
 
+	/*
+	 * Create stock directly
+	 */
 	@Transactional
 	public String addStockWithoutPR(StockDirectRequestDTOWrapper item) {
 
@@ -111,6 +115,9 @@ public class StockService<K> {
 		}
 	}
 
+	/*
+	 * Create stock from existing purchase order
+	 */
 	@Transactional
 	public String addStockFromPR(PurchaseOrderResponse po) {
 
@@ -169,6 +176,9 @@ public class StockService<K> {
 		}
 	}
 
+	/*
+	 * Find individual stock info by id
+	 */
 	public StockResponseDto getStockById(Integer stockId) {
 
 		if (stockId == null) {
@@ -189,11 +199,28 @@ public class StockService<K> {
 
 	}
 
+	/*
+	 * Find all stock It supports various searching and sorting criteria
+	 * stockCreatedAt, stockUpdatedAt, expiryDate only supports =bt=,=nb=
+	 */
 	public List<K> findAllStock(String filter, PageRequest pageRequest, Boolean isExported, String exportType,
 			HttpServletResponse response) {
 
 		List<Stock> stockInfo = new ArrayList<Stock>();
 		List<StockResponseDto> expo = new ArrayList<StockResponseDto>();
+		List<String> parsedSearch = new ArrayList<String>();
+		if (filter != null) {
+			String[] queryParams = filter.split(";");
+			for (String queryParam : queryParams) {
+				parsedSearch.add(BaseUtil.pareseIncommingSearchRequest(queryParam));
+			}
+		}
+
+		// Remove ; from last element
+		// parsedSearch.set(parsedSearch.size() - 1,
+		// parsedSearch.get(parsedSearch.size() - 1).replace(";", ""));
+		// filter = parsedSearch.
+		filter = String.join(";", parsedSearch);
 
 		if (isExported) {
 

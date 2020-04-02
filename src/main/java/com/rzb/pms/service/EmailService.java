@@ -1,8 +1,10 @@
 package com.rzb.pms.service;
 
 import java.io.File;
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 
@@ -16,10 +18,15 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.rzb.pms.model.Customer;
+import com.rzb.pms.model.Dispense;
+import com.rzb.pms.model.DispenseLineItems;
 import com.rzb.pms.model.Distributer;
 import com.rzb.pms.model.PoLineItems;
 import com.rzb.pms.model.PurchaseOrder;
 import com.rzb.pms.model.enums.RequestStatus;
+import com.rzb.pms.repository.CustomerRepository;
+import com.rzb.pms.repository.DispenseRepository;
 import com.rzb.pms.repository.DistributerRepository;
 import com.rzb.pms.repository.PoLineItemsRepository;
 import com.rzb.pms.repository.PurchaseOrderRepository;
@@ -47,6 +54,12 @@ public class EmailService {
 	@Autowired
 	private DistributerRepository distributerRepository;
 
+	@Autowired
+	private DispenseRepository dispenseRepo;
+
+	@Autowired
+	private CustomerRepository custRepo;
+
 	@Value("admin.email")
 	String fromEmail;
 
@@ -72,10 +85,9 @@ public class EmailService {
 
 	}
 
-	public String sentPoMail(String emailType, Integer data) {
+	public String processMail(String emailType, Integer data, String emailTo) {
 
 		HtmlTextEmail htmlTextEmail = null;
-		String emailTo = null;
 		HashMap<String, String> mailData = new HashMap<String, String>();
 
 		switch (emailType) {
@@ -123,6 +135,41 @@ public class EmailService {
 
 		case "EMAIL_SELL_INVOICE":
 
+			Integer dispenseId = data;
+
+			Dispense info = dispenseRepo.findById(dispenseId).orElse(null);
+
+			if (info == null) {
+				throw new ResponseStatusException(HttpStatus.NO_CONTENT,
+						"Dispense info not found for id : " + dispenseId);
+			}
+			Customer cust = custRepo.findById(info.getCustomerId()).orElse(null);
+			if (cust == null) {
+				throw new ResponseStatusException(HttpStatus.NO_CONTENT,
+						"Customer info not found for id : " + info.getCustomerId());
+			}
+			TableConfig disTable = EmailTemplateBuilder.builder().header("Sell Invoice").and().addTable();
+			disTable.addHeader(
+					"Seller : " + info.getSellBy() + "<br>Date : " + LocalDateTime.now() + "<br>Customer : "
+							+ cust.getName() + "(" + cust.getMobileNumber() + ")" + "<br>Payment Mode : "
+							+ info.getPaymentMode() + "<br>Invoice Number : " + info.getSellInvoiceNumber(),
+					true, Alignment.RIGHT);
+			disTable.addItemRowWithPrefixMiddle("Item Name[Exp date]", "Quantity", "Mrp", "S.P(Tax %, Discount %)")
+					.headerRow().nextRow();
+
+			for (DispenseLineItems res : info.getDispenseLineItems()) {
+				disTable.addItemRowWithPrefixMiddle(res.getBrandName(),
+						res.getItemSellQuantity() + "(" + res.getDrugUnit() + ")", String.valueOf(res.getMrp()),
+						res.getItemSellPrice() + "(" + res.getGstPercentage() + "," + res.getDiscount() + ")");
+			}
+			htmlTextEmail = disTable.addTotalRow(BigDecimal.valueOf(info.getTotalAmountBeforeTaxAndDiscount()))
+					.totalCaption("Total amount before tax and discount").borderBottom(false).nextRow()
+					.addTotalRow(BigDecimal.valueOf(info.getTotalAmountBeforeTaxAndDiscount()))
+					.totalCaption("Amount Paid").borderTop(false).totalCaption("Total amount paid").borderBottom(true)
+					.nextRow().and().addText("Thanks and Regards").and().addText("Team Pill-H").and()
+					.copyright("pill-H").url("https://www.pillh.io").build();
+
+			mailData.put("Subject", "Sell invoice");
 		}
 
 		mailData.put("To", emailTo);

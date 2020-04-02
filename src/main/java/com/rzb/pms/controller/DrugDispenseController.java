@@ -22,6 +22,7 @@ import com.rzb.pms.dto.AddToCartWrapperReq;
 import com.rzb.pms.dto.AddToCartWrapperRes;
 import com.rzb.pms.dto.DispenseResponseDTO;
 import com.rzb.pms.dto.DrugDispenseWrapperDTO;
+import com.rzb.pms.dto.ReturnLineItemWrapper;
 import com.rzb.pms.service.DrugDispensingService;
 import com.rzb.pms.utils.BaseUtil;
 import com.rzb.pms.utils.Endpoints;
@@ -97,11 +98,9 @@ public class DrugDispenseController {
 	@ApiOperation("Return dispensed items")
 	public ResponseEntity<ResponseSchema<String>> returnDispensedItems(
 			@ApiParam(value = "Dispense Id", required = true) @RequestParam Integer dispenseId,
-			@ApiParam(value = "Dispense Lineitem Id", required = true) @RequestParam Integer[] dispenseLineItemId) {
+			@ApiParam(value = "Dispense Lineitem Id with item qantity to be return", required = true) @RequestBody ReturnLineItemWrapper wrap) {
 
-		return new ResponseEntity<>(
-				ResponseUtil.buildSuccessResponse(cartService.returnDispensedItems(dispenseId, dispenseLineItemId),
-						new ResponseSchema<String>()),
-				HttpStatus.OK);
+		return new ResponseEntity<>(ResponseUtil.buildSuccessResponse(
+				cartService.returnDispensedItems(dispenseId, wrap), new ResponseSchema<String>()), HttpStatus.OK);
 	}
 }

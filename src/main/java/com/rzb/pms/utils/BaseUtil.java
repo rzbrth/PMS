@@ -320,4 +320,44 @@ public class BaseUtil {
 		}
 		return currentUserName;
 	}
+
+	public static String pareseIncommingSearchRequest(String queryParam) {
+
+		Object value = null;
+		String res, key, operator = null;
+		LocalDate rangeOne = null, rangeTwo = null;
+		Object[] result = null;
+		String[] o = queryParam.split("=like=|=ilike=|=bt=|=nb=|==|=gt=|=lt=|=ge=|=le=");
+		if (o.length < 2) {
+
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+					"Please provide proper search Criteria, Supported operators are =like=, =ilike=, =bt=,=nb=, ==, =gt=, =lt=,=ge=, =le=");
+		}
+		operator = queryParam.substring(o[0].length(), queryParam.length() - o[1].length()).replaceAll("\\s+", "");
+		value = o[1].trim().replaceAll("\\s+", " ");
+		key = o[0].replaceAll("\\s+", "");
+		if (key.equalsIgnoreCase("stockCreatedAt") || key.equalsIgnoreCase("stockUpdatedAt")
+				|| key.equalsIgnoreCase("expiryDate") && !value.toString().contains("(|,|)")) {
+
+			result = DateTimeUtills.getArrayOFDate(value.toString());
+			if (value.toString().equalsIgnoreCase("TODAY")) {
+				rangeOne = (LocalDate) result[0];
+				value = "(" + rangeOne + ")";
+			} else {
+				rangeOne = (LocalDate) result[0];
+				rangeTwo = (LocalDate) result[1];
+				value = "(" + rangeOne + "," + rangeTwo + ")";
+				operator = "=bt=";
+			}
+
+			
+
+		} else {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+					"Please provide proper date based search Criteria, Supported keys are stockCreatedAt, stockUpdatedAt, expiryDate");
+		}
+		res = key + operator + value;
+
+		return res;
+	}
 }

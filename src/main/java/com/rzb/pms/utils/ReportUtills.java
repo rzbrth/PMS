@@ -98,14 +98,15 @@ public class ReportUtills<K> {
 					}
 
 					// Write the output to a file
-					FileOutputStream fileOut = new FileOutputStream(reportCategory + "_Reports.xls");
-					workbook.write(fileOut);
+					// FileOutputStream fileOut = new FileOutputStream(reportCategory +
+					// "_Reports.xls");
+					// workbook.write(fileOut);
 
 					response.setContentType("application/vnd.ms-excel");
 					response.setHeader("Content-Disposition",
 							"attachment; filename=" + reportCategory + "_Reports.xls");
 					workbook.write(response.getOutputStream());
-					fileOut.close();
+					// fileOut.close();
 					workbook.close();
 
 					return (ResponseEntity<K>) ResponseEntity.ok().body(response);
@@ -218,14 +219,15 @@ public class ReportUtills<K> {
 					}
 
 					// Write the output to a file
-					FileOutputStream fileOut = new FileOutputStream(reportCategory + "_Reports.xls");
-					workbook.write(fileOut);
+					// FileOutputStream fileOut = new FileOutputStream(reportCategory +
+					// "_Reports.xls");
+					// workbook.write(fileOut);
 
 					response.setContentType("application/vnd.ms-excel");
 					response.setHeader("Content-Disposition",
 							"attachment; filename=" + reportCategory + "_Reports.xls");
 					workbook.write(response.getOutputStream());
-					fileOut.close();
+					// fileOut.close();
 					workbook.close();
 
 					return (ResponseEntity<K>) ResponseEntity.ok().body(response);
