@@ -6,18 +6,18 @@ import java.time.temporal.TemporalAdjusters;
 
 public class DateTimeUtills {
 
-	public static Object[] getArrayOFDate(String dayRef, LocalDate refFrom, LocalDate refTo) {
+	public static Object[] getArrayOFDate(String dayRef) {
 
 		LocalDate today = LocalDate.now();
 		LocalDate rangeOne = null, rangeTwo = null;
 
 		try {
 
-			switch (dayRef) {
+			switch (dayRef.toUpperCase()) {
 
 			case "TODAY": {
 				rangeOne = today;
-				return new Object[] { rangeOne, null };
+				return new Object[] { rangeOne};
 			}
 			case "YESTERDAY": {
 				rangeOne = today.minusDays(1);
@@ -48,11 +48,6 @@ public class DateTimeUtills {
 			case "THIS_YEAR": {
 				rangeOne = today.with(TemporalAdjusters.firstDayOfYear());
 				rangeTwo = today;
-				return new Object[] { rangeOne, rangeTwo };
-			}
-			case "CUSTOM": {
-				rangeOne = refFrom;
-				rangeTwo = refTo;
 				return new Object[] { rangeOne, rangeTwo };
 			}
 			}

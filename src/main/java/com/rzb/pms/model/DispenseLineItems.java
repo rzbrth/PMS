@@ -54,5 +54,7 @@ public class DispenseLineItems {
 	public Integer stockId;
 	
 	private Integer poId;
+	
+	private Float gstPercentage;
 
 }

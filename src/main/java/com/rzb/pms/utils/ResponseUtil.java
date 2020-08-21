@@ -1,5 +1,7 @@
 package com.rzb.pms.utils;
 
+import org.springframework.http.ResponseEntity;
+
 import com.rzb.pms.config.ResponseSchema;
 
 /**
@@ -25,4 +27,5 @@ public class ResponseUtil {
 		responseSchema.setResult(result);
 		return responseSchema;
 	}
+
 }

@@ -29,10 +29,11 @@ public class EmailController {
 	@ApiOperation("Send Email")
 	public ResponseEntity<ResponseSchema<String>> sentEmail(
 			@ApiParam(value = "Mail Type", required = true, allowableValues = "EMAIL_PO, EMAIL_SELL_INVOICE") @RequestParam(required = true) String mailType,
-			@ApiParam(value = "PO ID", required = true) @RequestParam(required = true) Integer id) {
+			@ApiParam(value = "ID", required = true) @RequestParam(required = true) Integer id,
+			@ApiParam(value = "To Mail", required = false) @RequestParam(required = false) String toMail) {
 
 		return new ResponseEntity<>(
-				ResponseUtil.buildSuccessResponse(service.sentPoMail(mailType, id), new ResponseSchema<String>()),
+				ResponseUtil.buildSuccessResponse(service.processMail(mailType, id, toMail), new ResponseSchema<String>()),
 				HttpStatus.OK);
 	}
 

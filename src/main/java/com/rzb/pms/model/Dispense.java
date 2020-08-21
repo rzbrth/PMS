@@ -46,6 +46,12 @@ public class Dispense {
 	@OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	@JoinColumn(name = "dispenseId", insertable = false, updatable = false)
 	private Customer customer;
-	
-	public Boolean isReturned;
+
+	private Boolean isReturned;
+
+	private Float totalAmountToBePaid;
+
+	private Integer totalItemSold;
+
+	private Float totalAmountBeforeTaxAndDiscount;
 }

@@ -14,19 +14,23 @@ import lombok.NoArgsConstructor;
 public class DrugDispenseWrapperDTO {
 
 	private List<AddToCartDTORes> item;
-	
+
 	private String mobileNumber;
-	
+
 	private String name;
-	
+
 	private Boolean isInvoiceRequired;
-	
+
 	private String invoiceType;
-	
+
 	private String paymentMode;
+
+	private Float totalAmountToBePaid;
+
+	private Float totalAmountBeforeTaxAndDiscount;
 	
-	//private Integer customerId;
-	
-	
-	
+	private String toEmail;
+
+	// private Integer customerId;
+
 }

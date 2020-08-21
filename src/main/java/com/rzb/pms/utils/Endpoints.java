@@ -45,6 +45,11 @@ public class Endpoints {
 
 	// Mail
 	public static final String MAIL = "/sentMail";
+	
+	// Print
+	public static final String PRINT = "/print/{id}/{printType}";
+	
+	
 
 	// Auth
 	public static final String AUTHENTICATION = "/auth", REFRESH = "/refresh", BLACK_LIST = "/blacklist";

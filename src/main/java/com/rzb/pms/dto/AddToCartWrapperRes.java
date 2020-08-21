@@ -14,4 +14,8 @@ import lombok.NoArgsConstructor;
 public class AddToCartWrapperRes {
 
 	private List<AddToCartDTORes> item;
+
+	private Float totalAmountToBePaid;
+
+	private Float totalAmountBeforeTaxAndDiscount;
 }
